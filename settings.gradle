@@ -1,0 +1,6 @@
+rootProject.name = 'knutice'
+include 'api'
+include 'crawler'
+include 'global'
+include 'db'
+
