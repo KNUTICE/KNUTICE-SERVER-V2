@@ -22,14 +22,20 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // QueryDsl
-
-
     // BCrypt
     implementation 'org.mindrot:jbcrypt:0.4'
 
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // QueryDSL - 충돌 방지를 위해 exclude 필수
+    implementation("com.querydsl:querydsl-mongodb:5.0.0") {
+        exclude group: "org.mongodb", module: "mongo-java-driver"
+    }
+    implementation 'com.querydsl:querydsl-core:5.0.0'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0'
+    annotationProcessor 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
