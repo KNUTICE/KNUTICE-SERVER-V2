@@ -1,9 +1,13 @@
 package api.domain.notice.converter;
 
+import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeDto;
+import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
 import api.domain.notice.controller.model.noticelist.NoticeRequest;
 import api.domain.notice.controller.model.noticelist.NoticeResponse;
+import api.domain.notice.controller.model.search.NoticeSearchRequest;
 import db.domain.notice.NoticeDocument;
 import db.domain.notice.dto.QNoticeDto;
+import db.domain.notice.dto.QNoticeSearchDto;
 import global.annotation.Converter;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +19,14 @@ public class NoticeConverter {
         return QNoticeDto.builder()
             .noticeName(noticeRequest.getNoticeName())
             .nttId(noticeRequest.getNttId())
+            .page(page)
+            .build();
+    }
+
+    public QNoticeSearchDto toDto(NoticeSearchRequest noticeSearchRequest, Pageable page) {
+        return QNoticeSearchDto.builder()
+            .keyword(noticeSearchRequest.getKeyword())
+            .nttId(noticeSearchRequest.getNttId())
             .page(page)
             .build();
     }
@@ -31,6 +43,33 @@ public class NoticeConverter {
                     .registeredAt(notice.getRegisteredAt())
                     .build())
             .toList();
+    }
+
+    public LatestThreeNoticeResponse toResponse(
+        List<NoticeDocument> generalNews,
+        List<NoticeDocument> scholarshipNews,
+        List<NoticeDocument> eventNews,
+        List<NoticeDocument> academicNews) {
+        return LatestThreeNoticeResponse.builder()
+            .latestThreeGeneralNews(toLatestThreeNoticeDto(generalNews))
+            .latestThreeScholarshipNews(toLatestThreeNoticeDto(scholarshipNews))
+            .latestThreeEventNews(toLatestThreeNoticeDto(eventNews))
+            .latestThreeAcademicNews(toLatestThreeNoticeDto(academicNews))
+            .build();
+    }
+
+    private List<LatestThreeNoticeDto> toLatestThreeNoticeDto(
+        List<NoticeDocument> noticeDocumentsList
+    ) {
+        return noticeDocumentsList.stream().map(
+            noticeDocument -> LatestThreeNoticeDto.builder()
+                .nttId(noticeDocument.getNttId())
+                .title(noticeDocument.getTitle())
+                .contentUrl(noticeDocument.getContentUrl())
+                .departmentName(noticeDocument.getDepartmentName())
+                .registeredAt(noticeDocument.getRegisteredAt())
+                .build()
+        ).toList();
     }
 
 }
