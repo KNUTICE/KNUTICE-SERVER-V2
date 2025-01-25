@@ -1,6 +1,7 @@
 package api.domain.notice.controller;
 
 import api.domain.notice.business.NoticeBusiness;
+import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
 import api.domain.notice.controller.model.noticelist.NoticeRequest;
 import api.domain.notice.controller.model.noticelist.NoticeResponse;
 import global.api.Api;
@@ -31,6 +32,12 @@ public class NoticeOpenApiController {
     ) {
         log.info("api test : {}", noticeRequest);
         List<NoticeResponse> response = noticeBusiness.getNoticeList(noticeRequest, page);
+        return Api.OK(response);
+    }
+
+    @GetMapping()
+    public Api<LatestThreeNoticeResponse> getLatestThreeNotice() {
+        LatestThreeNoticeResponse response = noticeBusiness.getLatestThreeNotice();
         return Api.OK(response);
     }
 

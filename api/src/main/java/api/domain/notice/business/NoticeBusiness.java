@@ -1,5 +1,6 @@
 package api.domain.notice.business;
 
+import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
 import api.domain.notice.controller.model.noticelist.NoticeRequest;
 import api.domain.notice.controller.model.noticelist.NoticeResponse;
 import api.domain.notice.converter.NoticeConverter;
@@ -7,6 +8,7 @@ import api.domain.notice.service.NoticeService;
 import db.domain.notice.NoticeDocument;
 import db.domain.notice.dto.QNoticeDto;
 import global.annotation.Business;
+import global.utils.NoticeMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -26,5 +28,18 @@ public class NoticeBusiness {
         List<NoticeDocument> noticeList = noticeService.getNoticeList(qNoticeDto);
 
         return noticeConverter.toResponse(noticeList);
+    }
+
+    public LatestThreeNoticeResponse getLatestThreeNotice() {
+        List<NoticeDocument> generalNews = noticeService.getLatestThreeNoticeBy(
+            NoticeMapper.GENERAL_NEWS);
+        List<NoticeDocument> scholarshipNews = noticeService.getLatestThreeNoticeBy(
+            NoticeMapper.SCHOLARSHIP_NEWS);
+        List<NoticeDocument> eventNews = noticeService.getLatestThreeNoticeBy(
+            NoticeMapper.EVENT_NEWS);
+        List<NoticeDocument> academicNews = noticeService.getLatestThreeNoticeBy(
+            NoticeMapper.ACADEMIC_NEWS);
+
+        return noticeConverter.toResponse(generalNews, scholarshipNews, eventNews, academicNews);
     }
 }
