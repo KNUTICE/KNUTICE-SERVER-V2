@@ -13,6 +13,8 @@ repositories {
 
 dependencies {
 
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
     // Mongo
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
@@ -20,23 +22,26 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // QueryDsl
-    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-
     // BCrypt
     implementation 'org.mindrot:jbcrypt:0.4'
 
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+    // QueryDSL - 충돌 방지를 위해 exclude 필수
+    implementation("com.querydsl:querydsl-mongodb:5.0.0") {
+        exclude group: "org.mongodb", module: "mongo-java-driver"
+    }
+    implementation 'com.querydsl:querydsl-core:5.0.0'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0'
+    annotationProcessor 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation project(":db")
     implementation project(":global")
+
 }
 
 test {
