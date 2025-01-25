@@ -12,11 +12,17 @@ import lombok.NoArgsConstructor;
 public class NoticeResponse {
 
     private Long nttId;
+
     private Integer contentNumber;
+
     private String title;
+
     private String contentUrl;
+
     private String contentImage;
-    private String departName;
+
+    private String departmentName;
+
     private String registeredAt;
 
 }

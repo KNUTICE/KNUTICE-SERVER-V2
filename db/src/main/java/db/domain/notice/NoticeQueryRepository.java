@@ -1,12 +1,19 @@
 package db.domain.notice;
 
-import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.PathBuilder;
 import db.domain.notice.dto.QNoticeDto;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
+
+import static db.domain.notice.QNoticeDocument.*;
 
 @Repository
 public class NoticeQueryRepository extends QuerydslRepositorySupport {
@@ -16,38 +23,31 @@ public class NoticeQueryRepository extends QuerydslRepositorySupport {
     }
 
     public List<NoticeDocument> findNoticeBy(QNoticeDto qNoticeDto) {
-
-        // 동적 쿼리 조건 생성
-        BooleanBuilder builder = buildQueryConditions(qNoticeDto);
-
-        // MorphiaQuery를 사용하여 쿼리 실행
-        MorphiaQuery<Notice> query = new MorphiaQuery<>(mongoOperations, QNotice.notice);
-        query.where(builder);
-
-        // 결과를 Projection 형식으로 변환하여 반환
-        return query.select(Projections.constructor(NoticeProjection.class,
-            QNotice.notice.id,
-            QNotice.notice.title,
-            QNotice.notice.content,
-            QNotice.notice.registeredAt
-        )).fetch();
+        return from(noticeDocument)
+            .where(
+                noticeDocument.noticeName.eq(qNoticeDto.getNoticeName()),
+                ltNttId(qNoticeDto.getNttId())
+            )
+            .orderBy(getOrderSpecifier(qNoticeDto.getPage().getSort()).stream()
+                .toArray(size -> new OrderSpecifier[size]))
+            .limit(qNoticeDto.getPage().getPageSize())
+            .fetch();
     }
 
-    private BooleanBuilder buildQueryConditions(QNoticeDto qNoticeDto) {
-        BooleanBuilder builder = new BooleanBuilder();
-
-        if (qNoticeDto.getId() != null) {
-            builder.and(QNotice.notice.id.eq(qNoticeDto.getId()));
-        }
-
-        if (qNoticeDto.getTitle() != null) {
-            builder.and(QNotice.notice.title.containsIgnoreCase(qNoticeDto.getTitle()));
-        }
-
-        if (qNoticeDto.getRegisteredAt() != null) {
-            builder.and(QNotice.notice.registeredAt.eq(qNoticeDto.getRegisteredAt()));
-        }
-
-        return builder;
+    private Predicate ltNttId(Long nttId) {
+        return nttId != null ? noticeDocument.nttId.lt(nttId) : null;
     }
+
+    private List<OrderSpecifier> getOrderSpecifier(Sort sort) {
+        List<OrderSpecifier> orders = new ArrayList<>();
+        sort.stream().forEach(order -> {
+            PathBuilder orderByExpression = new PathBuilder(NoticeDocument.class,
+                "noticeDocument");
+            orders.add(new OrderSpecifier<>(order.isAscending() ? Order.ASC : Order.DESC,
+                orderByExpression.get(order.getProperty())));
+
+        });
+        return orders;
+    }
+
 }

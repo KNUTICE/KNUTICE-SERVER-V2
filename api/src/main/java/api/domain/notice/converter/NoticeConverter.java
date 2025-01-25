@@ -2,6 +2,7 @@ package api.domain.notice.converter;
 
 import api.domain.notice.controller.model.noticelist.NoticeRequest;
 import api.domain.notice.controller.model.noticelist.NoticeResponse;
+import db.domain.notice.NoticeDocument;
 import db.domain.notice.dto.QNoticeDto;
 import global.annotation.Converter;
 import java.util.List;
@@ -18,7 +19,7 @@ public class NoticeConverter {
             .build();
     }
 
-    public List<NoticeResponse> toResponse(List<NoticeProjection> noticeList) {
+    public List<NoticeResponse> toResponse(List<NoticeDocument> noticeList) {
         return noticeList.stream().map(notice ->
                 NoticeResponse.builder()
                     .nttId(notice.getNttId())
@@ -26,7 +27,7 @@ public class NoticeConverter {
                     .title(notice.getTitle())
                     .contentUrl(notice.getContentUrl())
                     .contentImage(notice.getContentImage())
-                    .departName(notice.getDepartName())
+                    .departmentName(notice.getDepartmentName())
                     .registeredAt(notice.getRegisteredAt())
                     .build())
             .toList();

@@ -4,6 +4,7 @@ import api.domain.notice.controller.model.noticelist.NoticeRequest;
 import api.domain.notice.controller.model.noticelist.NoticeResponse;
 import api.domain.notice.converter.NoticeConverter;
 import api.domain.notice.service.NoticeService;
+import db.domain.notice.NoticeDocument;
 import db.domain.notice.dto.QNoticeDto;
 import global.annotation.Business;
 import java.util.List;
@@ -22,7 +23,7 @@ public class NoticeBusiness {
 
         QNoticeDto qNoticeDto = noticeConverter.toDto(noticeRequest, page);
 
-        List<NoticeProjection> noticeList = noticeService.getNoticeList(qNoticeDto);
+        List<NoticeDocument> noticeList = noticeService.getNoticeList(qNoticeDto);
 
         return noticeConverter.toResponse(noticeList);
     }
