@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class TopicSubscriptionRequest {
 
     @NotBlank
-    private String deviceToken;
+    private String fcmToken;
 
     @NotNull
     private NoticeMapper noticeName;

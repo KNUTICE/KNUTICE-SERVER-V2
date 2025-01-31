@@ -10,7 +10,7 @@ public class ReportConverter {
 
     public ReportDocument toEntity(ReportRequest reportRequest) {
         return ReportDocument.builder()
-            .token(reportRequest.getToken())
+            .fcmToken(reportRequest.getFcmToken())
             .content(reportRequest.getContent())
             .clientType(reportRequest.getClientType())
             .deviceName(reportRequest.getDeviceName())

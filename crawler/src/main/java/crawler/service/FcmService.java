@@ -9,8 +9,8 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.SendResponse;
 import crawler.fcmutils.FcmUtils;
 import crawler.service.model.FcmDto;
-import db.domain.token.DeviceTokenDocument;
-import db.domain.token.DeviceTokenMongoRepository;
+import db.domain.token.fcm.FcmTokenDocument;
+import db.domain.token.fcm.FcmTokenMongoRepository;
 import global.errorcode.ErrorCode;
 import global.utils.NoticeMapper;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class FcmService {
 
-    private final DeviceTokenMongoRepository deviceTokenMongoRepository;
+    private final FcmTokenMongoRepository fcmTokenMongoRepository;
     private final TokenManager tokenManager;
 
     private final FcmUtils fcmUtils;
@@ -34,11 +34,11 @@ public class FcmService {
     public void sendToTopic(FcmDto dto, NoticeMapper noticeMapper) {
 
         // NoticeMapper에 따른 활성화된 디바이트 토큰 조회
-        List<DeviceTokenDocument> deviceTokenDocumentList = this.getActivateTopicListBy(noticeMapper);
-        log.info("전송 기기 토큰 개수 : {}", deviceTokenDocumentList.size());
+        List<FcmTokenDocument> fcmTokenDocumentList = this.getActivateTopicListBy(noticeMapper);
+        log.info("전송 기기 토큰 개수 : {}", fcmTokenDocumentList.size());
 
-        List<String> deviceTokenList = deviceTokenDocumentList.stream()
-            .map(DeviceTokenDocument::getToken)
+        List<String> deviceTokenList = fcmTokenDocumentList.stream()
+            .map(FcmTokenDocument::getFcmToken)
             .toList();
 
         log.info("전송 기기 토큰 : {}", deviceTokenList);
@@ -112,16 +112,16 @@ public class FcmService {
         }
     }
 
-    private List<DeviceTokenDocument> getActivateTopicListBy(NoticeMapper noticeMapper) {
+    private List<FcmTokenDocument> getActivateTopicListBy(NoticeMapper noticeMapper) {
         switch (noticeMapper) {
             case GENERAL_NEWS:
-                return deviceTokenMongoRepository.findAllByGeneralNewsTopicTrue();
+                return fcmTokenMongoRepository.findAllByGeneralNewsTopicTrue();
             case SCHOLARSHIP_NEWS:
-                return deviceTokenMongoRepository.findAllByScholarshipNewsTopicTrue();
+                return fcmTokenMongoRepository.findAllByScholarshipNewsTopicTrue();
             case EVENT_NEWS:
-                return deviceTokenMongoRepository.findAllByEventNewsTopicTrue();
+                return fcmTokenMongoRepository.findAllByEventNewsTopicTrue();
             case ACADEMIC_NEWS:
-                return deviceTokenMongoRepository.findAllByAcademicNewsTopicTrue();
+                return fcmTokenMongoRepository.findAllByAcademicNewsTopicTrue();
             default:
                 throw new RuntimeException(ErrorCode.BAD_REQUEST.getDescription());
         }
