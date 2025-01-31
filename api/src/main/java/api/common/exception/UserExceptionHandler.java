@@ -1,7 +1,7 @@
 package api.common.exception;
 
 import api.common.error.UserErrorCode;
-import api.common.exception.token.UserNotFoundException;
+import api.common.exception.user.UserNotFoundException;
 import api.common.exception.user.EmailExistsException;
 import api.common.exception.user.PasswordMismatchException;
 import api.common.exception.user.UserExistsException;

@@ -1,5 +1,7 @@
 package api.domain.urgent.service;
 
+import api.common.error.UrgentNoticeErrorCode;
+import api.common.exception.urgent.UrgentNoticeNotFoundException;
 import db.domain.urgent.UrgentNoticeDocument;
 import db.domain.urgent.UrgentNoticeMongoRepository;
 import java.util.List;
@@ -16,7 +18,7 @@ public class UrgentNoticeService {
         List<UrgentNoticeDocument> urgentNoticeEntityList = urgentNoticeMongoRepository.findAll();
 
         if (urgentNoticeEntityList.isEmpty()) {
-            throw new RuntimeException("에러"); // TODO 예외처리
+            throw new UrgentNoticeNotFoundException(UrgentNoticeErrorCode.URGENT_NOTICE_NOT_FOUND);
         }
         return urgentNoticeEntityList;
     }

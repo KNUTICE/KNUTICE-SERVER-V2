@@ -1,5 +1,7 @@
 package api.domain.notice.service;
 
+import api.common.error.NoticeErrorCode;
+import api.common.exception.notice.NoticeNotFoundException;
 import db.domain.notice.NoticeDocument;
 import db.domain.notice.NoticeQueryRepository;
 import db.domain.notice.dto.QNoticeDto;
@@ -19,7 +21,7 @@ public class NoticeService {
         List<NoticeDocument> noticeList = noticeQueryRepository.findNoticeBy(qNoticeDto);
 
         if (noticeList.isEmpty()) {
-            throw new RuntimeException("예외"); // TODO 예외
+            throw new NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
         }
 
         return noticeList;
@@ -32,7 +34,7 @@ public class NoticeService {
     public List<NoticeDocument> getNoticeSearchList(QNoticeSearchDto qNoticeSearchDto) {
         List<NoticeDocument> noticeSearchList = noticeQueryRepository.findSearchBy(qNoticeSearchDto);
         if (noticeSearchList.isEmpty()) {
-            throw new RuntimeException("예외"); // TODO 예외
+            throw new NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
         }
         return noticeSearchList;
     }
