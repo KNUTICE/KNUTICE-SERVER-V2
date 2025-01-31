@@ -1,9 +1,9 @@
 package api.domain.jwt.helper;
 
 import api.common.error.JwtTokenErrorCode;
-import api.common.exception.token.TokenException;
-import api.common.exception.token.TokenExpiredException;
-import api.common.exception.token.TokenSignatureException;
+import api.common.exception.jwt.JwtTokenException;
+import api.common.exception.jwt.JwtTokenExpiredException;
+import api.common.exception.jwt.JwtTokenSignatureException;
 import api.domain.jwt.ifs.JwtTokenHelperIfs;
 import api.domain.jwt.model.JwtTokenDto;
 import io.jsonwebtoken.Claims;
@@ -57,11 +57,11 @@ public class JwtTokenHelper implements JwtTokenHelperIfs {
             return new HashMap<>(result.getBody());
         } catch (Exception e) {
             if (e instanceof SignatureException) { // 토큰이 유효하지 않을 때
-                throw new TokenSignatureException(JwtTokenErrorCode.INVALID_TOKEN);
+                throw new JwtTokenSignatureException(JwtTokenErrorCode.INVALID_TOKEN);
             } else if (e instanceof ExpiredJwtException) { // 토큰 만료
-                throw new TokenExpiredException(JwtTokenErrorCode.EXPIRED_TOKEN);
+                throw new JwtTokenExpiredException(JwtTokenErrorCode.EXPIRED_TOKEN);
             } else { // 그 외
-                throw new TokenException(JwtTokenErrorCode.TOKEN_EXCEPTION);
+                throw new JwtTokenException(JwtTokenErrorCode.TOKEN_EXCEPTION);
             }
         }
     }

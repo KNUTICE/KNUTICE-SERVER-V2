@@ -1,8 +1,8 @@
 package api.domain.jwt.business;
 
 import api.common.error.JwtTokenErrorCode;
-import api.common.exception.token.TokenException;
-import api.common.exception.token.TokenSignatureException;
+import api.common.exception.jwt.JwtTokenException;
+import api.common.exception.jwt.JwtTokenSignatureException;
 import api.domain.jwt.converter.JwtTokenConverter;
 import api.domain.jwt.model.JwtTokenDto;
 import api.domain.jwt.model.JwtTokenResponse;
@@ -27,7 +27,7 @@ public class JwtTokenBusiness {
     public JwtTokenResponse issueToken(UserDocument userDocument) {
 
         if (userDocument == null) {
-            throw new TokenException(ErrorCode.NULL_POINT);
+            throw new JwtTokenException(ErrorCode.NULL_POINT);
         }
 
         String userId = userDocument.getId();
@@ -51,7 +51,7 @@ public class JwtTokenBusiness {
             String token = refreshToken.substring(7);
             return jwtTokenService.reIssueAccessToken(token);
         }
-        throw new TokenSignatureException(JwtTokenErrorCode.INVALID_TOKEN);
+        throw new JwtTokenSignatureException(JwtTokenErrorCode.INVALID_TOKEN);
     }
 
     public JwtTokenValidationResponse tokenValidation(JwtTokenValidationRequest token) {

@@ -1,35 +1,34 @@
-package api.common.exception.token;
+package api.common.exception.user;
 
 import global.errorcode.ErrorCodeIfs;
 
-public class TokenExpiredException extends RuntimeException{
+public class UserNotFoundException extends RuntimeException{
 
     private final ErrorCodeIfs errorCodeIfs;
     private final String description;
 
-    public TokenExpiredException(ErrorCodeIfs errorCodeIfs) {
+    public UserNotFoundException(ErrorCodeIfs errorCodeIfs) {
         super(errorCodeIfs.getDescription());
         this.errorCodeIfs = errorCodeIfs;
         this.description = errorCodeIfs.getDescription();
     }
 
-    public TokenExpiredException(ErrorCodeIfs errorCodeIfs, String errorDescription) {
+    public UserNotFoundException(ErrorCodeIfs errorCodeIfs, String errorDescription) {
         this.errorCodeIfs = errorCodeIfs;
         this.description = errorDescription;
     }
 
-    public TokenExpiredException(ErrorCodeIfs errorCodeIfs, Throwable throwable) {
+    public UserNotFoundException(ErrorCodeIfs errorCodeIfs, Throwable throwable) {
         super(throwable);
         this.errorCodeIfs = errorCodeIfs;
         this.description = errorCodeIfs.getDescription();
     }
 
-    public TokenExpiredException(ErrorCodeIfs errorCodeIfs, Throwable throwable,
+    public UserNotFoundException(ErrorCodeIfs errorCodeIfs, Throwable throwable,
         String errorDescription) {
         super(throwable);
         this.errorCodeIfs = errorCodeIfs;
         this.description = errorDescription;
     }
-
 
 }

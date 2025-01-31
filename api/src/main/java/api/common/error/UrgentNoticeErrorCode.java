@@ -3,16 +3,13 @@ package api.common.error;
 import global.errorcode.ErrorCodeIfs;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum JwtTokenErrorCode implements ErrorCodeIfs {
-
-    INVALID_TOKEN(401,5100,"유효하지 않은 토큰입니다."),
-    EXPIRED_TOKEN(401,5101,"만료된 토큰입니다."),
-    TOKEN_EXCEPTION(401,5102,"알 수 없는 토큰 에러입니다."),
+public enum UrgentNoticeErrorCode implements ErrorCodeIfs {
+    URGENT_NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), 4000, "긴급 공지 게시글이 존재하지 않습니다.")
     ;
-
     private final Integer httpCode;
     private final Integer errorCode;
     private final String description;

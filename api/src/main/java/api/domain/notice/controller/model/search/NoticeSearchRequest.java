@@ -11,8 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class NoticeSearchRequest {
 
-    @Size(min = 2, max = 50)
-    @NotBlank
+    @Size(min = 1, max = 50)
     private String keyword;
 
     private Long nttId;

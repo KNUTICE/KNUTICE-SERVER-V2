@@ -1,6 +1,6 @@
 package api.domain.jwt.converter;
 
-import api.common.exception.token.TokenException;
+import api.common.exception.jwt.JwtTokenException;
 import api.domain.jwt.model.JwtTokenDto;
 import api.domain.jwt.model.JwtTokenResponse;
 import db.domain.token.jwt.JwtTokenDocument;
@@ -21,10 +21,10 @@ public class JwtTokenConverter {
     public JwtTokenResponse toResponse(JwtTokenDto accessToken, JwtTokenDto refreshToken) {
 
         Objects.requireNonNull(accessToken, ()->{
-            throw new TokenException(ErrorCode.NULL_POINT);
+            throw new JwtTokenException(ErrorCode.NULL_POINT);
         });
         Objects.requireNonNull(refreshToken, ()->{
-            throw new TokenException(ErrorCode.NULL_POINT);
+            throw new JwtTokenException(ErrorCode.NULL_POINT);
         });
 
         return JwtTokenResponse.builder()

@@ -1,7 +1,7 @@
 package api.domain.jwt.service;
 
 import api.common.error.JwtTokenErrorCode;
-import api.common.exception.token.TokenException;
+import api.common.exception.jwt.JwtTokenException;
 import api.domain.jwt.ifs.JwtTokenHelperIfs;
 import api.domain.jwt.model.JwtTokenDto;
 import db.domain.token.jwt.JwtTokenDocument;
@@ -36,12 +36,12 @@ public class JwtTokenService {
         String userId = validationToken(refreshToken);
 
         JwtTokenDocument jwtTokenDocument = jwtTokenMongoRepository.findById(userId)
-            .orElseThrow(() -> new TokenException(JwtTokenErrorCode.INVALID_TOKEN));
+            .orElseThrow(() -> new JwtTokenException(JwtTokenErrorCode.INVALID_TOKEN));
 
         String storedRefreshToken = jwtTokenDocument.getRefreshToken();
 
         if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
-            throw new TokenException(JwtTokenErrorCode.INVALID_TOKEN);
+            throw new JwtTokenException(JwtTokenErrorCode.INVALID_TOKEN);
         }
         return issueRefreshToken(userId);
     }
@@ -51,7 +51,7 @@ public class JwtTokenService {
 
         Object userId = userData.get("userId");
         Objects.requireNonNull(userId, () -> {
-            throw new TokenException(ErrorCode.NULL_POINT);
+            throw new JwtTokenException(ErrorCode.NULL_POINT);
         });
         return userId.toString();
     }
