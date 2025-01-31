@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "report")
 public class ReportDocument {
 
-    private String token;
+    private String fcmToken;
 
     private String content;
 

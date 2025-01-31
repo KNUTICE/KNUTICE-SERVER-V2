@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class ReportRequest {
 
     @NotBlank
-    private String token;
+    private String fcmToken;
 
     @Size(min = 5, max = 500)
     @NotBlank

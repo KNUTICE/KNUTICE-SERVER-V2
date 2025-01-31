@@ -1,8 +1,8 @@
 package api.domain.topic.business;
 
-import api.domain.token.service.TokenService;
+import api.domain.fcm.service.FcmService;
 import api.domain.topic.controller.model.TopicSubscriptionRequest;
-import db.domain.token.DeviceTokenDocument;
+import db.domain.token.fcm.FcmTokenDocument;
 import global.annotation.Business;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,35 +12,35 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TopicBusiness {
 
-    private final TokenService tokenService;
+    private final FcmService fcmService;
 
     public Boolean subscribeTopic(TopicSubscriptionRequest topicSubscriptionRequest) {
 
-        DeviceTokenDocument deviceTokenDocument = tokenService.getDeviceTokenBy(
-            topicSubscriptionRequest.getDeviceToken());
+        FcmTokenDocument fcmTokenDocument = fcmService.getFcmTokenBy(
+            topicSubscriptionRequest.getFcmToken());
 
-        setTopic(topicSubscriptionRequest, deviceTokenDocument);
+        setTopic(topicSubscriptionRequest, fcmTokenDocument);
 
-        tokenService.saveDeviceToken(deviceTokenDocument);
-        log.info("구독 요청 토큰 : {}", topicSubscriptionRequest.getDeviceToken());
+        fcmService.saveFcmToken(fcmTokenDocument);
+        log.info("구독 요청 토큰 : {}", topicSubscriptionRequest.getFcmToken());
         log.info("변경된 구독 상태 : [ {} : {} ]", topicSubscriptionRequest.getNoticeName(), topicSubscriptionRequest.getIsSubscribed());
 
         return true;
     }
 
-    private static void setTopic(TopicSubscriptionRequest topicSubscriptionRequest, DeviceTokenDocument deviceTokenDocument) {
+    private static void setTopic(TopicSubscriptionRequest topicSubscriptionRequest, FcmTokenDocument fcmTokenDocument) {
         switch (topicSubscriptionRequest.getNoticeName()) {
             case GENERAL_NEWS:
-                deviceTokenDocument.setGeneralNewsTopic(topicSubscriptionRequest.getIsSubscribed());
+                fcmTokenDocument.setGeneralNewsTopic(topicSubscriptionRequest.getIsSubscribed());
                 break;
             case SCHOLARSHIP_NEWS:
-                deviceTokenDocument.setScholarshipNewsTopic(topicSubscriptionRequest.getIsSubscribed());
+                fcmTokenDocument.setScholarshipNewsTopic(topicSubscriptionRequest.getIsSubscribed());
                 break;
             case EVENT_NEWS:
-                deviceTokenDocument.setEventNewsTopic(topicSubscriptionRequest.getIsSubscribed());
+                fcmTokenDocument.setEventNewsTopic(topicSubscriptionRequest.getIsSubscribed());
                 break;
             case ACADEMIC_NEWS:
-                deviceTokenDocument.setAcademicNewsTopic(topicSubscriptionRequest.getIsSubscribed());
+                fcmTokenDocument.setAcademicNewsTopic(topicSubscriptionRequest.getIsSubscribed());
                 break;
             default:
                 throw new RuntimeException("예외"); // TODO 예외

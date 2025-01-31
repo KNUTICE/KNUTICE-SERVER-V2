@@ -13,7 +13,7 @@ public class ReportService {
 
     public boolean submitReport(ReportDocument reportDocument) {
         ReportDocument savedReportDocument = reportMongoRepository.save(reportDocument);
-        return savedReportDocument.getToken() != null;
+        return savedReportDocument.getFcmToken() != null;
     }
 
 }

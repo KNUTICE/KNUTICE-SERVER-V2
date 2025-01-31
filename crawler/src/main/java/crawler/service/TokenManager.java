@@ -8,8 +8,8 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.SendResponse;
 import crawler.fcmutils.FcmUtils;
 import crawler.service.model.FcmDto;
-import db.domain.token.DeviceTokenDocument;
-import db.domain.token.DeviceTokenMongoRepository;
+import db.domain.token.fcm.FcmTokenDocument;
+import db.domain.token.fcm.FcmTokenMongoRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class TokenManager {
 
-    private final DeviceTokenMongoRepository deviceTokenMongoRepository;
+    private final FcmTokenMongoRepository fcmTokenMongoRepository;
     private final FcmUtils fcmUtils;
 
     /**
@@ -42,12 +42,12 @@ public class TokenManager {
         try {
             List<String> reFailedTokenList = reSendMessageAsync(failedTokenList, dto).get();
 
-            List<DeviceTokenDocument> tokenDocumentList = deviceTokenMongoRepository.findAllById(reFailedTokenList);
+            List<FcmTokenDocument> tokenDocumentList = fcmTokenMongoRepository.findAllById(reFailedTokenList);
 
-            List<DeviceTokenDocument> deleteList = new ArrayList<>(); // 삭제 대상
-            List<DeviceTokenDocument> updateList = new ArrayList<>(); // 업데이트 대상
+            List<FcmTokenDocument> deleteList = new ArrayList<>(); // 삭제 대상
+            List<FcmTokenDocument> updateList = new ArrayList<>(); // 업데이트 대상
 
-            for (DeviceTokenDocument tokenDocument : tokenDocumentList) {
+            for (FcmTokenDocument tokenDocument : tokenDocumentList) {
                 tokenDocument.setFailedCount(tokenDocument.getFailedCount() + 1);
 
                 if (tokenDocument.getFailedCount() > 20) {
@@ -65,16 +65,16 @@ public class TokenManager {
         }
     }
 
-    private void updateTokens(List<DeviceTokenDocument> updateList) {
+    private void updateTokens(List<FcmTokenDocument> updateList) {
         if (!updateList.isEmpty()) {
-            deviceTokenMongoRepository.saveAll(updateList);
+            fcmTokenMongoRepository.saveAll(updateList);
             log.info("업데이트된 토큰 개수: {}", updateList.size());
         }
     }
 
-    private void deleteTokens(List<DeviceTokenDocument> deleteList) {
+    private void deleteTokens(List<FcmTokenDocument> deleteList) {
         if (!deleteList.isEmpty()) {
-            deviceTokenMongoRepository.deleteAll(deleteList);
+            fcmTokenMongoRepository.deleteAll(deleteList);
             log.info("삭제된 토큰 개수: {}", deleteList.size());
         }
     }

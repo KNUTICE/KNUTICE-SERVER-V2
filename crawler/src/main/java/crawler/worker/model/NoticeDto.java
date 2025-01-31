@@ -22,6 +22,8 @@ public class NoticeDto {
     private String contentImage;
     private String departName;
     private String registeredAt;
+
+    @Builder.Default
     private boolean duplication = false;
 
     @Override
