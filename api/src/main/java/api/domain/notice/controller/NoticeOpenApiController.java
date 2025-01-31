@@ -8,7 +8,6 @@ import global.api.Api;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/open-api/notice")
-@Slf4j
 public class NoticeOpenApiController {
 
     private final NoticeBusiness noticeBusiness;
@@ -30,7 +28,6 @@ public class NoticeOpenApiController {
         @ModelAttribute @Valid NoticeRequest noticeRequest,
         @PageableDefault(sort = "nttId", direction = Sort.Direction.DESC, size = 20) Pageable page
     ) {
-        log.info("api test : {}", noticeRequest);
         List<NoticeResponse> response = noticeBusiness.getNoticeList(noticeRequest, page);
         return Api.OK(response);
     }

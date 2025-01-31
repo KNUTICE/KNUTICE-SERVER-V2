@@ -41,6 +41,7 @@ public class NoticeConverter {
                     .contentImage(notice.getContentImage())
                     .departmentName(notice.getDepartmentName())
                     .registeredAt(notice.getRegisteredAt())
+                    .noticeName(notice.getNoticeName())
                     .build())
             .toList();
     }
