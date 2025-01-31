@@ -1,5 +1,6 @@
 package api.domain.notice.controller.model.noticelist;
 
+import global.utils.NoticeMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,5 +25,7 @@ public class NoticeResponse {
     private String departmentName;
 
     private String registeredAt;
+
+    private NoticeMapper noticeName;
 
 }
