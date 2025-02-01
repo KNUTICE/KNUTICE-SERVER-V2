@@ -1,5 +1,6 @@
 package db.domain.token.jwt;
 
+import db.domain.user.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,8 @@ public class JwtTokenDocument {
 
     @Id
     private String userId;
+
+    private UserRole role;
 
     private String refreshToken;
 

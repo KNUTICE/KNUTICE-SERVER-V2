@@ -11,7 +11,7 @@ import java.util.Objects;
 @Converter
 public class JwtTokenConverter {
 
-    public JwtTokenDocument toRefreshTokenEntity(String userId, String refreshToken) {
+    public JwtTokenDocument toRefreshTokenDocument(String userId, String refreshToken) {
         return JwtTokenDocument.builder()
             .userId(userId)
             .refreshToken(refreshToken)

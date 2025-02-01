@@ -4,12 +4,13 @@ import api.common.error.JwtTokenErrorCode;
 import api.common.exception.jwt.JwtTokenException;
 import api.domain.jwt.ifs.JwtTokenHelperIfs;
 import api.domain.jwt.model.JwtTokenDto;
+import api.domain.jwt.model.JwtTokenInfo;
 import db.domain.token.jwt.JwtTokenDocument;
 import db.domain.token.jwt.JwtTokenMongoRepository;
+import db.domain.user.enums.UserRole;
 import global.errorcode.ErrorCode;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,22 +21,24 @@ public class JwtTokenService {
     private final JwtTokenHelperIfs jwtTokenHelperIfs;
     private final JwtTokenMongoRepository jwtTokenMongoRepository;
 
-    public JwtTokenDto issueAccessToken(String userId) {
+    public JwtTokenDto issueAccessToken(JwtTokenInfo jwtTokenInfo) {
         Map<String, Object> data = new HashMap<>();
-        data.put("userId", userId);
+        data.put("userId", jwtTokenInfo.getUserId());
+        data.put("role", jwtTokenInfo.getRole());
         return jwtTokenHelperIfs.issueAccessToken(data);
     }
 
-    public JwtTokenDto issueRefreshToken(String userId) {
+    public JwtTokenDto issueRefreshToken(JwtTokenInfo jwtTokenInfo) {
         Map<String, Object> data = new HashMap<>();
-        data.put("userId", userId);
+        data.put("userId", jwtTokenInfo.getUserId());
+        data.put("role", jwtTokenInfo.getRole());
         return jwtTokenHelperIfs.issueRefresh(data);
     }
 
     public JwtTokenDto reIssueAccessToken(String refreshToken) {
-        String userId = validationToken(refreshToken);
+        JwtTokenInfo jwtTokenInfo = validationToken(refreshToken);
 
-        JwtTokenDocument jwtTokenDocument = jwtTokenMongoRepository.findById(userId)
+        JwtTokenDocument jwtTokenDocument = jwtTokenMongoRepository.findById(jwtTokenInfo.getUserId())
             .orElseThrow(() -> new JwtTokenException(JwtTokenErrorCode.INVALID_TOKEN));
 
         String storedRefreshToken = jwtTokenDocument.getRefreshToken();
@@ -43,22 +46,32 @@ public class JwtTokenService {
         if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
             throw new JwtTokenException(JwtTokenErrorCode.INVALID_TOKEN);
         }
-        return issueRefreshToken(userId);
+        return issueRefreshToken(JwtTokenInfo.builder()
+            .userId(jwtTokenDocument.getUserId())
+            .role(jwtTokenDocument.getRole())
+            .build());
     }
 
-    public String validationToken(String token) {
+    public JwtTokenInfo validationToken(String token) {
         Map<String, Object> userData = jwtTokenHelperIfs.validationTokenWithThrow(token);
 
         Object userId = userData.get("userId");
-        Objects.requireNonNull(userId, () -> {
+        Object userRole = userData.get("role");
+
+        if (userId == null || userRole == null) {
             throw new JwtTokenException(ErrorCode.NULL_POINT);
-        });
-        return userId.toString();
+        }
+
+        return JwtTokenInfo.builder()
+            .userId(userId.toString())
+            .role(UserRole.valueOf(userRole.toString()))
+            .build();
     }
 
     public void saveRefreshToken(JwtTokenDocument jwtTokenDocument) {
         Map<String, Object> tokenData = new HashMap<>();
         tokenData.put("userId", jwtTokenDocument.getUserId());
+        tokenData.put("role", jwtTokenDocument.getRole());
         tokenData.put("refreshToken", jwtTokenDocument.getRefreshToken());
         jwtTokenMongoRepository.save(jwtTokenDocument);
     }

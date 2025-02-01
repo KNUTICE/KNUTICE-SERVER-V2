@@ -5,12 +5,14 @@ import api.common.exception.jwt.JwtTokenException;
 import api.common.exception.jwt.JwtTokenSignatureException;
 import api.domain.jwt.converter.JwtTokenConverter;
 import api.domain.jwt.model.JwtTokenDto;
+import api.domain.jwt.model.JwtTokenInfo;
 import api.domain.jwt.model.JwtTokenResponse;
 import api.domain.jwt.model.JwtTokenValidationRequest;
 import api.domain.jwt.model.JwtTokenValidationResponse;
 import api.domain.jwt.service.JwtTokenService;
 import db.domain.token.jwt.JwtTokenDocument;
 import db.domain.user.UserDocument;
+import db.domain.user.enums.UserRole;
 import global.annotation.Business;
 import global.errorcode.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -32,16 +34,20 @@ public class JwtTokenBusiness {
 
         String userId = userDocument.getId();
 
-        JwtTokenDto accessToken = jwtTokenService.issueAccessToken(userId);
+        JwtTokenInfo jwtTokenInfo = JwtTokenInfo.builder()
+            .userId(userId)
+            .role(userDocument.getRole())
+            .build();
 
-        JwtTokenDto refreshToken = jwtTokenService.issueRefreshToken(userId);
+        JwtTokenDto accessToken = jwtTokenService.issueAccessToken(jwtTokenInfo);
+        JwtTokenDto refreshToken = jwtTokenService.issueRefreshToken(jwtTokenInfo);
 
-        JwtTokenDocument tokenEntity = jwtTokenConverter.toRefreshTokenEntity(
+        JwtTokenDocument jwtTokenDocument = jwtTokenConverter.toRefreshTokenDocument(
             userDocument.getId(), refreshToken.getToken());
 
         jwtTokenService.deleteRefreshToken(userId);
 
-        jwtTokenService.saveRefreshToken(tokenEntity);
+        jwtTokenService.saveRefreshToken(jwtTokenDocument);
 
         return jwtTokenConverter.toResponse(accessToken, refreshToken);
     }
@@ -55,8 +61,8 @@ public class JwtTokenBusiness {
     }
 
     public JwtTokenValidationResponse tokenValidation(JwtTokenValidationRequest token) {
-        String userId = jwtTokenService.validationToken(
-            token.getJwtTokenDto().getToken().substring(7));
-        return JwtTokenValidationResponse.builder().userId(userId).build();
+        JwtTokenInfo jwtTokenInfo = jwtTokenService.validationToken(token.getToken().substring(7));
+        return JwtTokenValidationResponse.builder().userId(jwtTokenInfo.getUserId()).build();
     }
+
 }
