@@ -5,6 +5,7 @@ import api.common.exception.user.UserNotFoundException;
 import api.common.exception.user.EmailExistsException;
 import api.common.exception.user.PasswordMismatchException;
 import api.common.exception.user.UserExistsException;
+import api.common.exception.user.UserNotPermitted;
 import global.api.Api;
 import global.errorcode.ErrorCodeIfs;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,13 @@ public class UserExceptionHandler {
         log.error("", e);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(Api.ERROR(UserErrorCode.PASSWORD_MISMATCH));
+    }
+
+    @ExceptionHandler(value = UserNotPermitted.class)
+    public ResponseEntity<Api<ErrorCodeIfs>> notPermittedUser(UserNotPermitted e) {
+        log.error("", e);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(Api.ERROR(UserErrorCode.USER_NOT_FOUND));
     }
 
 }

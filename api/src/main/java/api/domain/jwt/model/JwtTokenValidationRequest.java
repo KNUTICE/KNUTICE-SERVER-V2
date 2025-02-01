@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class JwtTokenValidationRequest {
 
-    private JwtTokenDto jwtTokenDto;
+    private String token;
 
 }
