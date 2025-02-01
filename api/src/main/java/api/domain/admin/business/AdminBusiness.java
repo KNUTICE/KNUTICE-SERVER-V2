@@ -8,7 +8,7 @@ import api.domain.admin.controller.model.request.NoticeUpdateRequest;
 import api.domain.admin.controller.model.response.ReportDetailResponse;
 import api.domain.admin.controller.model.response.ReportListResponse;
 import api.domain.admin.controller.model.request.UrgentNoticeSaveRequest;
-import api.domain.admin.controller.model.response.UserInfoList;
+import api.domain.admin.controller.model.response.FcmTokenInfoList;
 import api.domain.admin.service.AdminService;
 import api.domain.fcm.converter.FcmTokenConverter;
 import api.domain.notice.converter.NoticeConverter;
@@ -98,8 +98,8 @@ public class AdminBusiness {
         return reportConverter.toDetailResponse(reportDocument);
     }
 
-    public List<UserInfoList> getUserList() {
-        List<FcmTokenDocument> fcmTokenDocumentList = adminService.getUserList();
+    public List<FcmTokenInfoList> getFcmTokenList() {
+        List<FcmTokenDocument> fcmTokenDocumentList = adminService.getFcmTokenList();
         return fcmTokenConverter.toListResponse(fcmTokenDocumentList);
     }
 

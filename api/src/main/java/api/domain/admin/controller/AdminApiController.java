@@ -6,7 +6,7 @@ import api.domain.admin.controller.model.request.NoticeUpdateRequest;
 import api.domain.admin.controller.model.response.ReportDetailResponse;
 import api.domain.admin.controller.model.response.ReportListResponse;
 import api.domain.admin.controller.model.request.UrgentNoticeSaveRequest;
-import api.domain.admin.controller.model.response.UserInfoList;
+import api.domain.admin.controller.model.response.FcmTokenInfoList;
 import global.api.Api;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -73,9 +73,9 @@ public class AdminApiController {
         return Api.OK(response);
     }
 
-    @GetMapping("/users")
-    public Api<List<UserInfoList>> getUserList() {
-        List<UserInfoList> responseList = adminBusiness.getUserList();
+    @GetMapping("/fcm-tokens")
+    public Api<List<FcmTokenInfoList>> getFcmTokenList() {
+        List<FcmTokenInfoList> responseList = adminBusiness.getFcmTokenList();
         return Api.OK(responseList);
     }
 

@@ -2,8 +2,8 @@ package api.domain.report.controller;
 
 import api.domain.report.business.ReportBusiness;
 import api.domain.report.controller.model.ReportRequest;
-import global.annotation.ApiValid;
 import global.api.Api;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +18,7 @@ public class ReportController {
     private final ReportBusiness reportBusiness;
 
     @PostMapping()
-    public Api<Boolean> submitReport(@RequestBody @ApiValid Api<ReportRequest> reportRequest) {
+    public Api<Boolean> submitReport(@RequestBody @Valid Api<ReportRequest> reportRequest) {
         Boolean response = reportBusiness.submitReport(reportRequest.getBody());
         return Api.OK(response);
     }

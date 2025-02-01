@@ -1,6 +1,6 @@
 package api.domain.fcm.converter;
 
-import api.domain.admin.controller.model.response.UserInfoList;
+import api.domain.admin.controller.model.response.FcmTokenInfoList;
 import api.domain.fcm.controller.model.FcmTokenRequest;
 import db.domain.token.fcm.FcmTokenDocument;
 import global.annotation.Converter;
@@ -17,8 +17,8 @@ public class FcmTokenConverter {
             .build();
     }
 
-    public UserInfoList toResponse(FcmTokenDocument fcmTokenDocument) {
-        return UserInfoList.builder()
+    public FcmTokenInfoList toResponse(FcmTokenDocument fcmTokenDocument) {
+        return FcmTokenInfoList.builder()
             .fcmToken(fcmTokenDocument.getFcmToken())
             .generalNewsTopic(fcmTokenDocument.isGeneralNewsTopic())
             .scholarshipNewsTopic(fcmTokenDocument.isScholarshipNewsTopic())
@@ -29,7 +29,7 @@ public class FcmTokenConverter {
             .build();
     }
 
-    public List<UserInfoList> toListResponse(List<FcmTokenDocument> fcmTokenDocumentList) {
+    public List<FcmTokenInfoList> toListResponse(List<FcmTokenDocument> fcmTokenDocumentList) {
         return fcmTokenDocumentList.stream()
             .map(this::toResponse)
             .toList();

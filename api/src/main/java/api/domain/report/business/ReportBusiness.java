@@ -17,6 +17,5 @@ public class ReportBusiness {
     public Boolean submitReport(ReportRequest reportRequest) {
         ReportDocument reportDocument = reportConverter.toDocument(reportRequest);
         return reportService.submitReport(reportDocument);
-
     }
 }

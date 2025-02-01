@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class UserInfoList {
+public class FcmTokenInfoList {
 
     private String fcmToken;
 

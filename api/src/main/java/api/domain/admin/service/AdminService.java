@@ -52,7 +52,7 @@ public class AdminService {
             .orElseThrow(() -> new ReportNotFoundException(ReportErrorCode.REPORT_NOT_FOUND));
     }
 
-    public List<FcmTokenDocument> getUserList() {
+    public List<FcmTokenDocument> getFcmTokenList() {
         return fcmTokenMongoRepository.findAll();
     }
 
