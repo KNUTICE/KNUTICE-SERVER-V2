@@ -42,4 +42,10 @@ public class NoticeBusiness {
 
         return noticeConverter.toResponse(generalNews, scholarshipNews, eventNews, academicNews);
     }
+
+    public NoticeResponse getNoticeBy(Long nttId) {
+        NoticeDocument noticeDocument = noticeService.getNoticeBy(nttId);
+        return noticeConverter.toResponse(noticeDocument);
+    }
+
 }

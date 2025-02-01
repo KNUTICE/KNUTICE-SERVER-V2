@@ -1,5 +1,6 @@
 package api.domain.notice.converter;
 
+import api.domain.admin.controller.model.request.NoticeSaveRequest;
 import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeDto;
 import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
 import api.domain.notice.controller.model.noticelist.NoticeRequest;
@@ -71,6 +72,32 @@ public class NoticeConverter {
                 .registeredAt(noticeDocument.getRegisteredAt())
                 .build()
         ).toList();
+    }
+
+    public NoticeResponse toResponse(NoticeDocument noticeDocument) {
+        return NoticeResponse.builder()
+            .nttId(noticeDocument.getNttId())
+            .contentNumber(noticeDocument.getContentNumber())
+            .title(noticeDocument.getTitle())
+            .contentUrl(noticeDocument.getContentUrl())
+            .contentImage(noticeDocument.getContentImage())
+            .departmentName(noticeDocument.getDepartmentName())
+            .registeredAt(noticeDocument.getRegisteredAt())
+            .noticeName(noticeDocument.getNoticeName())
+            .build();
+    }
+
+    public NoticeDocument toDocument(NoticeSaveRequest noticeSaveRequest) {
+        return NoticeDocument.builder()
+            .nttId(noticeSaveRequest.getNttId())
+            .noticeName(noticeSaveRequest.getNoticeName())
+            .title(noticeSaveRequest.getTitle())
+            .contentNumber(noticeSaveRequest.getContentNumber())
+            .contentUrl(noticeSaveRequest.getContentUrl())
+            .contentImage(noticeSaveRequest.getContentImage())
+            .departmentName(noticeSaveRequest.getDepartmentName())
+            .registeredAt(noticeSaveRequest.getRegisteredAt())
+            .build();
     }
 
 }
