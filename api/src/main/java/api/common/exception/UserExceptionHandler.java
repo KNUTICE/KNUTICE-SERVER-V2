@@ -50,7 +50,7 @@ public class UserExceptionHandler {
     public ResponseEntity<Api<ErrorCodeIfs>> notPermittedUser(UserNotPermitted e) {
         log.error("", e);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(Api.ERROR(UserErrorCode.USER_NOT_FOUND));
+            .body(Api.ERROR(UserErrorCode.USER_NOT_PERMITTED));
     }
 
 }
