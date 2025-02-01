@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,6 +36,12 @@ public class NoticeOpenApiController {
     @GetMapping()
     public Api<LatestThreeNoticeResponse> getLatestThreeNotice() {
         LatestThreeNoticeResponse response = noticeBusiness.getLatestThreeNotice();
+        return Api.OK(response);
+    }
+
+    @GetMapping("/{nttId}")
+    public Api<NoticeResponse> getNotice(@PathVariable Long nttId) {
+        NoticeResponse response = noticeBusiness.getNoticeBy(nttId);
         return Api.OK(response);
     }
 

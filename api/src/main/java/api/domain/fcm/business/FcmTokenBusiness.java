@@ -32,7 +32,7 @@ public class FcmTokenBusiness {
             existsFcmTokenDocument.setFailedCount(0);
             return fcmService.saveFcmToken(existsFcmTokenDocument);
         }else { // @Builder.Default 를 지정했기 때문에, set() 할 필요 없음
-            FcmTokenDocument newFcmTokenDocument = fcmTokenConverter.toEntity(fcmTokenRequest);
+            FcmTokenDocument newFcmTokenDocument = fcmTokenConverter.toDocument(fcmTokenRequest);
             return fcmService.saveFcmToken(newFcmTokenDocument);
         }
     }

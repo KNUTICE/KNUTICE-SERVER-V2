@@ -17,17 +17,14 @@ public class ReportRequest {
     private String fcmToken;
 
     @Size(min = 5, max = 500)
-    @NotBlank
     private String content;
 
     @NotNull
     private ClientType clientType;
 
-    @NotBlank
     @Size(max = 50)
     private String deviceName;
 
-    @NotBlank
     @Size(max = 50)
     private String version;
 
