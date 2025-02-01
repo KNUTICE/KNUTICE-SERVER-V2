@@ -11,7 +11,7 @@ import java.util.List;
 @Converter
 public class ReportConverter {
 
-    public ReportDocument toDocuemnt(ReportRequest reportRequest) {
+    public ReportDocument toDocument(ReportRequest reportRequest) {
         return ReportDocument.builder()
             .fcmToken(reportRequest.getFcmToken())
             .content(reportRequest.getContent())

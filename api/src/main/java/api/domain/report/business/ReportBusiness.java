@@ -15,7 +15,7 @@ public class ReportBusiness {
     private final ReportConverter reportConverter;
 
     public Boolean submitReport(ReportRequest reportRequest) {
-        ReportDocument reportDocument = reportConverter.toDocuemnt(reportRequest);
+        ReportDocument reportDocument = reportConverter.toDocument(reportRequest);
         return reportService.submitReport(reportDocument);
 
     }
