@@ -53,8 +53,8 @@ public class JwtTokenHelper implements JwtTokenHelperIfs {
         JwtParser parser = Jwts.parser().verifyWith(key).build();
 
         try {
-            Jws<Claims> result = parser.parseClaimsJws(token);
-            return new HashMap<>(result.getBody());
+            Jws<Claims> result = parser.parseSignedClaims(token);
+            return new HashMap<>(result.getPayload());
         } catch (Exception e) {
             if (e instanceof SignatureException) { // 토큰이 유효하지 않을 때
                 throw new JwtTokenSignatureException(JwtTokenErrorCode.INVALID_TOKEN);
@@ -73,9 +73,9 @@ public class JwtTokenHelper implements JwtTokenHelperIfs {
         SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
 
         String jwtToken = Jwts.builder()
-            .signWith(key, SignatureAlgorithm.HS256)
-            .setClaims(data)
-            .setExpiration(expiredAt)
+            .signWith(key)
+            .claims(data)
+            .expiration(expiredAt)
             .compact();
 
         return JwtTokenDto.builder()
