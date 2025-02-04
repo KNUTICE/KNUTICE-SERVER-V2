@@ -2,7 +2,7 @@ package api.domain.fcm.business;
 
 import api.domain.fcm.controller.model.FcmTokenRequest;
 import api.domain.fcm.converter.FcmTokenConverter;
-import api.domain.fcm.service.FcmService;
+import api.domain.fcm.service.FcmTokenService;
 import db.domain.token.fcm.FcmTokenDocument;
 import global.annotation.Business;
 import java.time.LocalDateTime;
@@ -13,13 +13,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FcmTokenBusiness {
 
-    private final FcmService fcmService;
+    private final FcmTokenService fcmTokenService;
 
     private final FcmTokenConverter fcmTokenConverter;
 
     public Boolean saveFcmToken(FcmTokenRequest fcmTokenRequest) {
 
-        Optional<FcmTokenDocument> fcmTokenDocument = fcmService.getFcmToken(
+        Optional<FcmTokenDocument> fcmTokenDocument = fcmTokenService.getFcmToken(
             fcmTokenRequest.getFcmToken());
 
         /**
@@ -30,10 +30,10 @@ public class FcmTokenBusiness {
             FcmTokenDocument existsFcmTokenDocument = fcmTokenDocument.get();
             existsFcmTokenDocument.setRegisteredAt(LocalDateTime.now());
             existsFcmTokenDocument.setFailedCount(0);
-            return fcmService.saveFcmToken(existsFcmTokenDocument);
+            return fcmTokenService.saveFcmToken(existsFcmTokenDocument);
         }else { // @Builder.Default 를 지정했기 때문에, set() 할 필요 없음
             FcmTokenDocument newFcmTokenDocument = fcmTokenConverter.toDocument(fcmTokenRequest);
-            return fcmService.saveFcmToken(newFcmTokenDocument);
+            return fcmTokenService.saveFcmToken(newFcmTokenDocument);
         }
     }
 
