@@ -2,7 +2,7 @@ package api.domain.topic.business;
 
 import api.common.error.TopicErrorCode;
 import api.common.exception.topic.TopicNotFoundException;
-import api.domain.fcm.service.FcmService;
+import api.domain.fcm.service.FcmTokenService;
 import api.domain.topic.controller.model.TopicSubscriptionRequest;
 import db.domain.token.fcm.FcmTokenDocument;
 import global.annotation.Business;
@@ -14,16 +14,16 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TopicBusiness {
 
-    private final FcmService fcmService;
+    private final FcmTokenService fcmTokenService;
 
     public Boolean subscribeTopic(TopicSubscriptionRequest topicSubscriptionRequest) {
 
-        FcmTokenDocument fcmTokenDocument = fcmService.getFcmTokenBy(
+        FcmTokenDocument fcmTokenDocument = fcmTokenService.getFcmTokenBy(
             topicSubscriptionRequest.getFcmToken());
 
         setTopic(topicSubscriptionRequest, fcmTokenDocument);
 
-        fcmService.saveFcmToken(fcmTokenDocument);
+        fcmTokenService.saveFcmToken(fcmTokenDocument);
         log.info("구독 요청 토큰 : {}", topicSubscriptionRequest.getFcmToken());
         log.info("변경된 구독 상태 : [ {} : {} ]", topicSubscriptionRequest.getNoticeName(), topicSubscriptionRequest.getIsSubscribed());
 

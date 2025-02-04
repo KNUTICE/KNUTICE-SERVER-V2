@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class FcmService {
+public class FcmTokenService {
 
     private final FcmTokenMongoRepository fcmTokenMongoRepository;
 
@@ -28,4 +28,9 @@ public class FcmService {
             .orElseThrow(() -> new FcmTokenNotFoundException(FcmTokenErrorCode.TOKEN_NOT_FOUND));
 
     }
+
+    public boolean existsBy(String fcmToken) {
+        return fcmTokenMongoRepository.existsById(fcmToken);
+    }
+
 }
