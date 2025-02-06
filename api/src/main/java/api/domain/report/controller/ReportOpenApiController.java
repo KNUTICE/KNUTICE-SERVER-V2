@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/open-api/report")
-public class ReportController {
+public class ReportOpenApiController {
 
     private final ReportBusiness reportBusiness;
 
