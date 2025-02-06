@@ -81,6 +81,9 @@ public class FcmService {
         String category = noticeMapper.getCategory();
         StringBuilder contentBuilder = new StringBuilder();
 
+        // TODO 테스트 Custom message, 실제 운영시 제거
+        category = "["+ category + "]";
+
         // 로그로 출력
         for (String title : noticeTitleList) {
             log.info("new! - {} : {}", category, title);
