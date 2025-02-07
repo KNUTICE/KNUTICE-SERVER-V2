@@ -1,0 +1,34 @@
+<configuration scan="true" scanPeriod="30 seconds">
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <springProperty name="LOG_PATH" source="log.config.path" defaultValue="logs/"/>
+  <springProperty name="MODULE_NAME" source="spring.application.name" defaultValue="knutice-api"/>
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/${MODULE_NAME}-logFile.log</file>
+    <append>true</append>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/knutice-api-logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>24</maxHistory>
+      <totalSizeCap>100MB</totalSizeCap>
+    </rollingPolicy>
+
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{35} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="FILE"/>
+  </root>
+
+  <logger name="LoggingInterceptor" additivity="false">
+    <level value = "INFO" />
+    <appender-ref ref="FILE" />
+  </logger>
+</configuration>
