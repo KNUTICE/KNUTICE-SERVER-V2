@@ -111,7 +111,7 @@ public class FcmUtils {
                 MessagingErrorCode messagingErrorCode = exception.getMessagingErrorCode();
                 log.warn("[{}] Messaging Error Code : {}, TOKEN : {}", Thread.currentThread().getName(), messagingErrorCode, messageList.get(i).getFcmToken());
 
-                if ((messagingErrorCode == MessagingErrorCode.UNREGISTERED) || (messagingErrorCode == MessagingErrorCode.INVALID_ARGUMENT)) {
+                if ((messagingErrorCode == MessagingErrorCode.UNREGISTERED)) {
                     deleteList.add(messageList.get(i).getFcmToken());
                 } else {
                     failedMessages.add(messageList.get(i));
@@ -122,7 +122,7 @@ public class FcmUtils {
 
         if (!deleteList.isEmpty()) {
             fcmTokenMongoRepository.deleteAllByFcmTokenIn(deleteList);
-            log.warn("[{}] UNREGISTERED, INVALID_ARGUMENT 으로 삭제되는 토큰 개수 : {}", Thread.currentThread().getName(), deleteList.size());
+            log.warn("[{}] UNREGISTERED 으로 삭제되는 토큰 개수 : {}", Thread.currentThread().getName(), deleteList.size());
         }
 
         return failedMessages;
