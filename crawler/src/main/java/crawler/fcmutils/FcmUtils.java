@@ -67,6 +67,17 @@ public class FcmUtils {
             .toList();
     }
 
+    public List<MessageWithFcmToken> createMessagesWithTokenList(FcmDto fcmDto, List<String> deviceTokenList) {
+        List<MessageWithFcmToken> messageWithTokenList = new ArrayList<>();
+
+        for (String token : deviceTokenList) {
+            Message message = createMessageBuilder(fcmDto, token);
+            messageWithTokenList.add(new MessageWithFcmToken(message, token));
+        }
+
+        return messageWithTokenList;
+    }
+
     public FcmDto buildMultipleNotice(List<String> noticeTitleList, String category) {
         return FcmDto.builder()
             .title(category)
@@ -98,9 +109,9 @@ public class FcmUtils {
             FirebaseMessagingException exception = batchResponse.getResponses().get(i).getException();
             if (exception != null) {
                 MessagingErrorCode messagingErrorCode = exception.getMessagingErrorCode();
-                log.warn("Messaging Error Code : {}, TOKEN : {}", messagingErrorCode, messageList.get(i).getFcmToken());
+                log.warn("[{}] Messaging Error Code : {}, TOKEN : {}", Thread.currentThread().getName(), messagingErrorCode, messageList.get(i).getFcmToken());
 
-                if ((messagingErrorCode == MessagingErrorCode.UNREGISTERED) || (messagingErrorCode == MessagingErrorCode.INVALID_ARGUMENT)) {
+                if ((messagingErrorCode == MessagingErrorCode.UNREGISTERED)) {
                     deleteList.add(messageList.get(i).getFcmToken());
                 } else {
                     failedMessages.add(messageList.get(i));
@@ -111,7 +122,7 @@ public class FcmUtils {
 
         if (!deleteList.isEmpty()) {
             fcmTokenMongoRepository.deleteAllByFcmTokenIn(deleteList);
-            log.warn("UNREGISTERED, INVALID_ARGUMENT 으로 삭제되는 토큰 개수 : {}", deleteList.size());
+            log.warn("[{}] UNREGISTERED 으로 삭제되는 토큰 개수 : {}", Thread.currentThread().getName(), deleteList.size());
         }
 
         return failedMessages;
@@ -140,7 +151,7 @@ public class FcmUtils {
     private void updateTokens(List<FcmTokenDocument> updateList) {
         if (!updateList.isEmpty()) {
             fcmTokenMongoRepository.saveAll(updateList);
-            log.info("FailedCount + 1 토큰 개수: {}", updateList.size());
+            log.info("FailedCount 증가 토큰 개수: {}", updateList.size());
         }
     }
 
