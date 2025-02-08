@@ -12,6 +12,7 @@ import db.domain.token.fcm.FcmTokenMongoRepository;
 import global.utils.NoticeMapper;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,7 @@ public class FcmService {
             .map(FcmTokenDocument::getFcmToken)
             .toList();
 
-        batchSend(fcmDto, deviceTokenList);
+        sendBatch(fcmDto, deviceTokenList);
     }
 
     /**
@@ -44,65 +45,67 @@ public class FcmService {
      * 두 번째 시도 - 1000ms 대기 후 전송
      * 세 번째 시도 - 4000ms 대기 후 전송
      */
-    public void batchSend(FcmDto fcmDto, List<String> deviceTokenList) {
-        List<MessageWithFcmToken> messageWithTokenList = new ArrayList<>();
 
-        // 각 FCM 토큰에 대해 Message 생성
-        for (String token : deviceTokenList) {
-            Message message = fcmUtils.createMessageBuilder(fcmDto, token);
-            messageWithTokenList.add(new MessageWithFcmToken(message, token));
-        }
+    public void sendBatch(FcmDto fcmDto, List<String> deviceTokenList) {
+        List<MessageWithFcmToken> messageWithTokenList = fcmUtils.createMessagesWithTokenList(fcmDto, deviceTokenList);
+
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (int i = 0; i < messageWithTokenList.size(); i += MAX_DEVICES_PER_MESSAGE) {
-            List<MessageWithFcmToken> batchList = new ArrayList<>(messageWithTokenList.subList(i,
-                Math.min(i + MAX_DEVICES_PER_MESSAGE, messageWithTokenList.size())));
+            List<MessageWithFcmToken> batchList = new ArrayList<>(messageWithTokenList.subList(i, Math.min(i + MAX_DEVICES_PER_MESSAGE, messageWithTokenList.size())));
 
-            int attempt = 0;
-            while (attempt < MAX_RETRIES && !batchList.isEmpty()) {
+            // 각 배치 처리를 비동기로 실행
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> processBatch(batchList));
+            futures.add(future);
+        }
 
-                List<Message> messageList = batchList.stream()
-                    .map(MessageWithFcmToken::getMessage)
-                    .collect(Collectors.toList());
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    }
 
-                BatchResponse batchResponse;
-                try {
-                    batchResponse = FirebaseMessaging.getInstance().sendEach(messageList);
-                    log.info("전송 개수: {}", batchResponse.getResponses().size());
-                } catch (FirebaseMessagingException e) {
-                    log.error("FCM 요청 실패 (시도: {}/{}): {}", attempt + 1, MAX_RETRIES, e.getMessage());
-                    attempt++;
-                    backoff(attempt);
-                    continue;
-                }
+    private void processBatch(List<MessageWithFcmToken> batchList) {
+        int attempt = 0;
+        log.info("FCM 전송 실행 중인 스레드 : {}", Thread.currentThread().getName());
 
-                int failureCount = batchResponse.getFailureCount();
-                if (failureCount == 0) {
-                    log.info("FCM 전송 성공 (총 {}개)", batchResponse.getSuccessCount());
-                    break;
-                }
+        while (attempt < MAX_RETRIES && !batchList.isEmpty()) {
+            List<Message> messageList = batchList.stream()
+                .map(MessageWithFcmToken::getMessage)
+                .collect(Collectors.toList());
 
-                log.warn("FCM 일부 실패: 성공 {}개, 실패 {}개 (시도: {}/{})",
-                    batchResponse.getSuccessCount(), failureCount, attempt + 1, MAX_RETRIES);
-
-                // 실패한 메시지만 필터링하여 재시도할 목록으로 업데이트
-                batchList = fcmUtils.filterFailedMessages(batchList, batchResponse);
+            BatchResponse batchResponse;
+            try {
+                batchResponse = FirebaseMessaging.getInstance().sendEach(messageList);
+                log.info("[{}] 전송 개수: {}", Thread.currentThread().getName(), batchResponse.getResponses().size());
+            } catch (FirebaseMessagingException e) {
+                log.error("[{}] FCM 요청 실패 (시도: {}/{}): {}",Thread.currentThread().getName(), attempt + 1, MAX_RETRIES, e.getMessage());
                 attempt++;
-
-                if (attempt != MAX_RETRIES) { // 3번 시도 끝나면 바로 토큰 update 로직 실행
-                    backoff(attempt);
-                }
+                backoff(attempt);
+                continue;
             }
 
-            // 최대 재시도 횟수 초과 시, 실패한 토큰 삭제
-            if (!batchList.isEmpty()) {
-                log.error("FCM 전송 실패: 최대 재시도 횟수 초과");
-
-                List<String> failedTokenList = batchList.stream()
-                    .map(MessageWithFcmToken::getFcmToken)
-                    .collect(Collectors.toList());
-
-                fcmUtils.updateFailedToken(failedTokenList);
+            int failureCount = batchResponse.getFailureCount();
+            if (failureCount == 0) {
+                log.info("[{}] FCM 전송 성공 (총 {}개)", Thread.currentThread().getName(), batchResponse.getSuccessCount());
+                return;
             }
+
+            log.warn("[{}] FCM 일부 실패: 성공 {}개, 실패 {}개 (시도: {}/{})", Thread.currentThread().getName(), batchResponse.getSuccessCount(), failureCount, attempt + 1, MAX_RETRIES);
+
+            batchList = fcmUtils.filterFailedMessages(batchList, batchResponse);
+            attempt++;
+
+            if (attempt != MAX_RETRIES) {
+                backoff(attempt);
+            }
+        }
+
+        if (!batchList.isEmpty()) {
+            log.error("[{}] FCM 전송 실패: 최대 재시도 횟수 초과", Thread.currentThread().getName());
+
+            List<String> failedTokenList = batchList.stream()
+                .map(MessageWithFcmToken::getFcmToken)
+                .collect(Collectors.toList());
+
+            fcmUtils.updateFailedToken(failedTokenList);
         }
     }
 
@@ -110,12 +113,12 @@ public class FcmService {
      * 지수 백오프(Exponential Backoff) 적용하여 재시도 대기
      */
     private void backoff(int attempt) {
-        long backoffTime = (long) Math.pow(2, attempt) * 1000;
-        log.info("백오프 적용 (시도 {}): {}ms 동안 대기", attempt, backoffTime);
+        int backoffTime = (int) (Math.pow(2, attempt) * 1000);
+        log.info("[{}] 백오프 적용 (시도 {}): {}ms 동안 대기", Thread.currentThread().getName(), attempt, backoffTime);
         try {
             Thread.sleep(backoffTime);
         } catch (InterruptedException ie) {
-            log.error("백오프 중 인터럽트 발생", ie);
+            log.error("[{}] 백오프 중 인터럽트 발생", Thread.currentThread().getName(), ie);
             throw new IllegalStateException("백오프 중 인터럽트 발생", ie);
         }
     }
