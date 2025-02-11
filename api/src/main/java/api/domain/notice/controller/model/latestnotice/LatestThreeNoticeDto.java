@@ -1,14 +1,15 @@
 package api.domain.notice.controller.model.latestnotice;
 
+import global.utils.NoticeMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LatestThreeNoticeDto {
 
     private Long nttId;
@@ -16,5 +17,6 @@ public class LatestThreeNoticeDto {
     private String contentUrl;
     private String departmentName;
     private String registeredAt;
+    private NoticeMapper noticeName;
 
 }
