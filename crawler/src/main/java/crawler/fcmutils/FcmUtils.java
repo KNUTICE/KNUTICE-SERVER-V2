@@ -6,14 +6,15 @@ import com.google.firebase.messaging.ApnsConfig;
 import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.ApsAlert;
 import com.google.firebase.messaging.BatchResponse;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
 import crawler.service.model.FcmDto;
 import db.domain.token.fcm.FcmTokenDocument;
 import db.domain.token.fcm.FcmTokenMongoRepository;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -66,6 +67,17 @@ public class FcmUtils {
             .toList();
     }
 
+    public List<MessageWithFcmToken> createMessagesWithTokenList(FcmDto fcmDto, List<String> deviceTokenList) {
+        List<MessageWithFcmToken> messageWithTokenList = new ArrayList<>();
+
+        for (String token : deviceTokenList) {
+            Message message = createMessageBuilder(fcmDto, token);
+            messageWithTokenList.add(new MessageWithFcmToken(message, token));
+        }
+
+        return messageWithTokenList;
+    }
+
     public FcmDto buildMultipleNotice(List<String> noticeTitleList, String category) {
         return FcmDto.builder()
             .title(category)
@@ -88,13 +100,29 @@ public class FcmUtils {
      */
     public List<MessageWithFcmToken> filterFailedMessages(List<MessageWithFcmToken> messageList,
         BatchResponse batchResponse) {
+
         List<MessageWithFcmToken> failedMessages = new ArrayList<>();
+        List<String> deleteList = new ArrayList<>(); // 삭제 대상
 
         for (int i = 0; i < batchResponse.getResponses().size(); i++) {
-            if (batchResponse.getResponses().get(i).getException() != null) {
 
-                failedMessages.add(messageList.get(i));
+            FirebaseMessagingException exception = batchResponse.getResponses().get(i).getException();
+            if (exception != null) {
+                MessagingErrorCode messagingErrorCode = exception.getMessagingErrorCode();
+                log.warn("[{}] Messaging Error Code : {}, TOKEN : {}", Thread.currentThread().getName(), messagingErrorCode, messageList.get(i).getFcmToken());
+
+                if ((messagingErrorCode == MessagingErrorCode.UNREGISTERED)) {
+                    deleteList.add(messageList.get(i).getFcmToken());
+                } else {
+                    failedMessages.add(messageList.get(i));
+                }
+
             }
+        }
+
+        if (!deleteList.isEmpty()) {
+            fcmTokenMongoRepository.deleteAllByFcmTokenIn(deleteList);
+            log.warn("[{}] UNREGISTERED 으로 삭제되는 토큰 개수 : {}", Thread.currentThread().getName(), deleteList.size());
         }
 
         return failedMessages;
@@ -123,7 +151,7 @@ public class FcmUtils {
     private void updateTokens(List<FcmTokenDocument> updateList) {
         if (!updateList.isEmpty()) {
             fcmTokenMongoRepository.saveAll(updateList);
-            log.info("FailedCount + 1 토큰 개수: {}", updateList.size());
+            log.info("FailedCount 증가 토큰 개수: {}", updateList.size());
         }
     }
 

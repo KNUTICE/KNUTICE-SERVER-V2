@@ -51,7 +51,8 @@ public class NoticeConverter {
         List<NoticeDocument> generalNews,
         List<NoticeDocument> scholarshipNews,
         List<NoticeDocument> eventNews,
-        List<NoticeDocument> academicNews) {
+        List<NoticeDocument> academicNews
+    ) {
         return LatestThreeNoticeResponse.builder()
             .latestThreeGeneralNews(toLatestThreeNoticeDto(generalNews))
             .latestThreeScholarshipNews(toLatestThreeNoticeDto(scholarshipNews))
@@ -70,6 +71,7 @@ public class NoticeConverter {
                 .contentUrl(noticeDocument.getContentUrl())
                 .departmentName(noticeDocument.getDepartmentName())
                 .registeredAt(noticeDocument.getRegisteredAt())
+                .noticeName(noticeDocument.getNoticeName())
                 .build()
         ).toList();
     }
