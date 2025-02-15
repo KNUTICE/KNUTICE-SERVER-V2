@@ -1,5 +1,6 @@
 package api.domain.notice.controller.model.latestnotice;
 
+import api.domain.notice.controller.model.noticelist.NoticeResponse;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,9 +13,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class LatestThreeNoticeResponse {
 
-    private List<LatestThreeNoticeDto> latestThreeGeneralNews;
-    private List<LatestThreeNoticeDto> latestThreeScholarshipNews;
-    private List<LatestThreeNoticeDto> latestThreeEventNews;
-    private List<LatestThreeNoticeDto> latestThreeAcademicNews;
+    private List<NoticeResponse> latestThreeGeneralNews;
+    private List<NoticeResponse> latestThreeScholarshipNews;
+    private List<NoticeResponse> latestThreeEventNews;
+    private List<NoticeResponse> latestThreeAcademicNews;
 
 }
