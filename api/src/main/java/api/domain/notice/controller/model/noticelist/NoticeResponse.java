@@ -14,8 +14,6 @@ public class NoticeResponse {
 
     private Long nttId;
 
-    private Integer contentNumber;
-
     private String title;
 
     private String contentUrl;
