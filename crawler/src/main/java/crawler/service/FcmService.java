@@ -25,9 +25,9 @@ public class FcmService {
     private final FcmUtils fcmUtils;
 
     private static final int MAX_DEVICES_PER_MESSAGE = 500;
-    private static final int MAX_RETRIES = 4; // 최대 재시도 횟수
+    private static final int MAX_RETRIES = 3; // 최대 재시도 횟수
     private static final int BASE_BACKOFF_TIME = 1; // 기본 대기 시간 1s
-    private static final int MAX_BACKOFF_TIME = BASE_BACKOFF_TIME * (1 << (MAX_RETRIES - 1)); // 최대 대기 시간 8s
+    private static final int MAX_BACKOFF_TIME = BASE_BACKOFF_TIME * (1 << MAX_RETRIES); // 최대 대기 시간 8s
 
     // 재전송이 가능한 경우의 예외
     private static final Set<MessagingErrorCode> RETRYABLE_ERROR_CODES =
@@ -47,9 +47,6 @@ public class FcmService {
             ));
 
 
-
-
-
     private void sendToTopic(FcmDto fcmDto, NoticeMapper noticeMapper) throws FirebaseMessagingException {
         List<FcmTokenDocument> fcmTokenDocumentList = getActivateTopicListBy(noticeMapper);
 
@@ -63,7 +60,7 @@ public class FcmService {
     public void batchSend(FcmDto fcmDto, List<String> deviceTokenList) {
         List<MessageWithFcmToken> messageWithTokenList = new ArrayList<>();
 
-        if(deviceTokenList.size() == 0) {
+        if (deviceTokenList.size() == 0) {
             log.warn("해당 주제를 구독한 사용자가 없습니다.");
             return;
         }
@@ -95,16 +92,8 @@ public class FcmService {
     }
 
 
-
-
     // 토큰 집합이 1개인 경우
     public void processBatch(List<MessageWithFcmToken> targetList, int retryCount) {
-
-        // 재귀 베이스 조건. (삭제 x)
-        if (retryCount > (MAX_RETRIES - 1)) {
-            log.error("최대 재시도 횟수가 초과되었습니다.");
-            return;
-        }
 
         List<Message> messageList = targetList.stream()
                 .map(MessageWithFcmToken::getMessage)
@@ -168,63 +157,66 @@ public class FcmService {
                 log.error("예상치 못한 오류가 발생했습니다: {} - {}번 시도", errorCode, attempt);
                 return;
             }
-
-            if (batchResponse == null) {
-                log.error("최대 재시도 횟수 이후 메세지 전송이 실패한 경우");
-                return;
-            };
-
-            // 만약 전송이 성공했다면, attempt 는 최소 1, 최대 3
-
-
-            if (batchResponse.getFailureCount() == 0) {
-                log.info("FCM 전송 모두 성공 (총 {}개)", batchResponse.getSuccessCount());
-                return;
-            }
-
-            List<MessageWithFcmToken> failedMessages = new ArrayList<>();
-            List<String> deleteTokenList = new ArrayList<>();
-
-            List<SendResponse> sendResponseList = batchResponse.getResponses();
-            for (int i = 0; i < sendResponseList.size(); i++) {
-                if (!sendResponseList.get(i).isSuccessful()) {
-                    MessagingErrorCode errorCode = sendResponseList.get(i).getException().getMessagingErrorCode();
-                    if (RETRYABLE_ERROR_CODES.contains(errorCode)) {
-                        failedMessages.add(targetList.get(i));
-                    } else if (errorCode == MessagingErrorCode.UNREGISTERED) {
-                        deleteTokenList.add(targetList.get(i).getFcmToken());
-                    }
-                }
-            }
-
-            // 삭제 토큰 작업
-            CompletableFuture<Void> deleteTokenTask = CompletableFuture.runAsync(() -> {
-                if (!deleteTokenList.isEmpty()) {
-                    List<FcmTokenDocument> tokenDocumentList = fcmTokenMongoRepository.findAllById(deleteTokenList);
-                    fcmUtils.deleteTokens(tokenDocumentList);
-                }
-            });
-
-
-            // 재전송 토큰이 있는 경우에 최소~최대치 까지 증가한 재시도 횟수를 다시 초기화. (전체 발송에 대한 시도횟수이므로)
-            backOff(retryCount + 1);
-
-            // 재시도 작업, 재전송에 실패하는 메세지가 없을때까지
-            CompletableFuture<Void> retryTokenTask = CompletableFuture.runAsync(() -> {
-                if (!failedMessages.isEmpty()) {
-                    // 재귀를 타고 종료되면, 재귀 깊이 만큼 processBatch 가 종료되고, 이후에 join() 작업으로 넘어가기 때문에
-                    // 최초 batchSend 메소드의 종료시점은, 모든 재귀가 끝나는 시점.
-                    processBatch(failedMessages, retryCount + 1);
-                }
-            });
-
-            // 두 비동기 작업이 모두 완료될 때까지 기다린 후 종료.
-            CompletableFuture.allOf(deleteTokenTask, retryTokenTask).join();
         }
+
+        // 전체 전송 이후, backoff 최대 재시도 횟수가 넘어서 while 문이 종료된 경우
+        if (batchResponse == null) {
+            log.error("최대 재전송 횟수 시도 이후, 전송에 실패한 경우 종료");
+            return;
+        }
+        // 전체 전송 이후, 전송에 성공했고, 전송된 값들중에서 실패한 토큰이 없는 경우에는 재시도 로직 및 삭제 로직을 적용할 필요가 없음.
+        if (batchResponse != null && batchResponse.getFailureCount() == 0) {
+            log.info("FCM 전송 모두 성공 (총 {}개)", batchResponse.getSuccessCount());
+            return;
+        }
+
+        // 1. batchResponse == null || batchResponse.getFailureCount() != 0
+        // 첫 번째 경우는 불가능 (위 경우에 대해서 처리하고 있으므로)
+        // 두 번째 경우는 실패한 토큰이 적어도 한 개 이상 있는 상황에 대한 처리가 필요
+        List<MessageWithFcmToken> failedMessages = new ArrayList<>();
+        List<String> deleteTokenList = new ArrayList<>();
+        List<SendResponse> sendResponseList = batchResponse.getResponses();
+
+        for (int i = 0; i < sendResponseList.size(); i++) {
+            if (!sendResponseList.get(i).isSuccessful()) {
+                MessagingErrorCode errorCode = sendResponseList.get(i).getException().getMessagingErrorCode();
+                if (RETRYABLE_ERROR_CODES.contains(errorCode)) {
+                    failedMessages.add(targetList.get(i));
+                } else if (errorCode == MessagingErrorCode.UNREGISTERED) {
+                    deleteTokenList.add(targetList.get(i).getFcmToken());
+                }
+            }
+        }
+
+        // 삭제 토큰 작업
+        CompletableFuture<Void> deleteTokenTask = CompletableFuture.runAsync(() -> {
+            if (!deleteTokenList.isEmpty()) {
+                List<FcmTokenDocument> tokenDocumentList = fcmTokenMongoRepository.findAllById(deleteTokenList);
+                fcmUtils.deleteTokens(tokenDocumentList);
+            }
+        });
+
+        backOff(retryCount);
+
+        // 재귀 베이스 조건. (삭제 x)
+        if (retryCount + 1 >= MAX_RETRIES) {
+            log.error("최대 재시도 횟수가 초과되었습니다.");
+            return;
+        }
+        // 재시도 작업, 재전송에 실패하는 메세지가 없을때까지
+        CompletableFuture<Void> retryTokenTask = CompletableFuture.runAsync(() -> {
+            if (!failedMessages.isEmpty()) {
+                // 재귀를 타고 종료되면, 재귀 깊이 만큼 processBatch 가 종료되고, 이후에 join() 작업으로 넘어가기 때문에
+                // 최초 batchSend 메소드의 종료시점은, 모든 재귀가 끝나는 시점.
+                processBatch(failedMessages, retryCount + 1);
+            }
+        });
+        // 두 비동기 작업이 모두 완료될 때까지 기다린 후 종료.
+        CompletableFuture.allOf(deleteTokenTask, retryTokenTask).join();
     }
 
     private void backOff(int attempt) {
-        int waitTime = Math.min(BASE_BACKOFF_TIME * (1 << (attempt - 1)), MAX_BACKOFF_TIME);
+        int waitTime = Math.min(BASE_BACKOFF_TIME * (1 << attempt), MAX_BACKOFF_TIME);
         try {
             TimeUnit.SECONDS.sleep(waitTime); // 1초 동안 대기
         } catch (InterruptedException ie) {
