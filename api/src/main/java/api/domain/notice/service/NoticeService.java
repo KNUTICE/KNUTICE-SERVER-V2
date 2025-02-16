@@ -51,4 +51,12 @@ public class NoticeService {
         return noticeMongoRepository.existsById(nttId);
     }
 
+    public List<NoticeDocument> getNoticeList(List<Long> nttIdList) {
+        List<NoticeDocument> noticeDocumentList = noticeMongoRepository.findAllById(nttIdList);
+        if (noticeDocumentList.isEmpty()) {
+            throw new NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
+        }
+        return noticeDocumentList;
+    }
+
 }
