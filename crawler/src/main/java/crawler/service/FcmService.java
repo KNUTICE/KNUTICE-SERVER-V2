@@ -37,7 +37,6 @@ public class FcmService {
                     MessagingErrorCode.QUOTA_EXCEEDED
             ));
 
-
     // 재전송이 불가능한 경우의 예외
     private static final Set<MessagingErrorCode> NOT_RETRYABLE_ERROR_CODES =
             Collections.unmodifiableSet(EnumSet.of(
@@ -45,10 +44,6 @@ public class FcmService {
                     MessagingErrorCode.INVALID_ARGUMENT,
                     MessagingErrorCode.SENDER_ID_MISMATCH
             ));
-
-
-
-
 
     private void sendToTopic(FcmDto fcmDto, NoticeMapper noticeMapper) throws FirebaseMessagingException {
         List<FcmTokenDocument> fcmTokenDocumentList = getActivateTopicListBy(noticeMapper);
@@ -80,7 +75,7 @@ public class FcmService {
         if (tokenSize == 1) {
             processBatch(messageWithTokenList, 0);
         } else {
-
+            log.info("[{}] 배치 처리 병렬 실행 시작 (토큰 집합 수: {})", Thread.currentThread().getName(), tokenSize);
             List<CompletableFuture<Void>> futureList = new ArrayList<>();
             for (int i = 0; i < tokenSize; i++) {
                 int start = i * MAX_DEVICES_PER_MESSAGE;
@@ -93,9 +88,6 @@ public class FcmService {
             CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0])).join();
         }
     }
-
-
-
 
     // 토큰 집합이 1개인 경우
     public void processBatch(List<MessageWithFcmToken> targetList, int retryCount) {
@@ -120,10 +112,8 @@ public class FcmService {
                  * 전체 요청 실패: 네트워크 문제, Firebase 서버 내부 오류, 인증 문제 등으로 인해 전체 요청이 실패하면 FirebaseMessagingException이 발생할 수 있습니다.
                  * sendEach 메서드는 개별 메세지에 대한 오류를 잡는게 아닌, 전체 요청에 대한 예외를 캐치합니다. 개별 메시지 에러에 대한 사항은 batchResponse 에 담겨 개별 오류로 처리가 가능합니다.
                  */
-
-                log.info("FCM 전송 시작 - 시도 횟수: {}", attempt);
-                batchResponse = FirebaseMessaging.getInstance().sendEach(messageList);
-                log.info("전송 개수: {}", batchResponse.getResponses().size());
+                batchResponse = FirebaseMessaging.getInstance().sendEach(messageList, true);
+                log.info("[{}] 전송 개수: {} (시도: {}/{})",Thread.currentThread().getName(), batchResponse.getResponses().size(), retryCount + 1, MAX_RETRIES);
             } catch (FirebaseMessagingException e) {
                 /**
                  * 전체 배치 메세지 전송에 대해서 전송이 불가능한 경우 예외 발생에 대한 처리.
@@ -205,7 +195,6 @@ public class FcmService {
                 }
             });
 
-
             // 재전송 토큰이 있는 경우에 최소~최대치 까지 증가한 재시도 횟수를 다시 초기화. (전체 발송에 대한 시도횟수이므로)
             backOff(retryCount + 1);
 
@@ -214,6 +203,7 @@ public class FcmService {
                 if (!failedMessages.isEmpty()) {
                     // 재귀를 타고 종료되면, 재귀 깊이 만큼 processBatch 가 종료되고, 이후에 join() 작업으로 넘어가기 때문에
                     // 최초 batchSend 메소드의 종료시점은, 모든 재귀가 끝나는 시점.
+                    log.info("[{}] 재시도할 메시지 개수: {}", Thread.currentThread().getName(), failedMessages.size());
                     processBatch(failedMessages, retryCount + 1);
                 }
             });
@@ -226,6 +216,7 @@ public class FcmService {
     private void backOff(int attempt) {
         int waitTime = Math.min(BASE_BACKOFF_TIME * (1 << (attempt - 1)), MAX_BACKOFF_TIME);
         try {
+            log.info("[{}] 백오프 적용 (시도 {}): {}s 동안 대기", Thread.currentThread().getName(), attempt, waitTime);
             TimeUnit.SECONDS.sleep(waitTime); // 1초 동안 대기
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
