@@ -155,7 +155,7 @@ public class FcmUtils {
         }
     }
 
-    private void deleteTokens(List<FcmTokenDocument> deleteList) {
+    public void deleteTokens(List<FcmTokenDocument> deleteList) {
         if (!deleteList.isEmpty()) {
             fcmTokenMongoRepository.deleteAll(deleteList);
             log.info("삭제된 토큰 개수: {}", deleteList.size());
