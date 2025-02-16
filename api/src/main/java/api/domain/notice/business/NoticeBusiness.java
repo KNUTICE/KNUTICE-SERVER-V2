@@ -3,6 +3,7 @@ package api.domain.notice.business;
 import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
 import api.domain.notice.controller.model.noticelist.NoticeRequest;
 import api.domain.notice.controller.model.noticelist.NoticeResponse;
+import api.domain.notice.controller.model.sync.NoticeSyncRequest;
 import api.domain.notice.converter.NoticeConverter;
 import api.domain.notice.service.NoticeService;
 import db.domain.notice.NoticeDocument;
@@ -46,6 +47,12 @@ public class NoticeBusiness {
     public NoticeResponse getNoticeBy(Long nttId) {
         NoticeDocument noticeDocument = noticeService.getNoticeBy(nttId);
         return noticeConverter.toResponse(noticeDocument);
+    }
+
+    public List<NoticeResponse> getNoticeList(NoticeSyncRequest noticeSyncRequest) {
+        List<NoticeDocument> noticeList = noticeService.getNoticeList(
+            noticeSyncRequest.getNttIdList());
+        return noticeConverter.toResponse(noticeList);
     }
 
 }

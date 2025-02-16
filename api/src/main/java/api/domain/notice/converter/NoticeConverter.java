@@ -1,7 +1,6 @@
 package api.domain.notice.converter;
 
 import api.domain.admin.controller.model.request.NoticeSaveRequest;
-import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeDto;
 import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
 import api.domain.notice.controller.model.noticelist.NoticeRequest;
 import api.domain.notice.controller.model.noticelist.NoticeResponse;
@@ -36,7 +35,6 @@ public class NoticeConverter {
         return noticeList.stream().map(notice ->
                 NoticeResponse.builder()
                     .nttId(notice.getNttId())
-                    .contentNumber(notice.getContentNumber())
                     .title(notice.getTitle())
                     .contentUrl(notice.getContentUrl())
                     .contentImage(notice.getContentImage())
@@ -61,14 +59,15 @@ public class NoticeConverter {
             .build();
     }
 
-    private List<LatestThreeNoticeDto> toLatestThreeNoticeDto(
+    private List<NoticeResponse> toLatestThreeNoticeDto(
         List<NoticeDocument> noticeDocumentsList
     ) {
         return noticeDocumentsList.stream().map(
-            noticeDocument -> LatestThreeNoticeDto.builder()
+            noticeDocument -> NoticeResponse.builder()
                 .nttId(noticeDocument.getNttId())
                 .title(noticeDocument.getTitle())
                 .contentUrl(noticeDocument.getContentUrl())
+                .contentImage(noticeDocument.getContentImage())
                 .departmentName(noticeDocument.getDepartmentName())
                 .registeredAt(noticeDocument.getRegisteredAt())
                 .noticeName(noticeDocument.getNoticeName())
@@ -79,7 +78,6 @@ public class NoticeConverter {
     public NoticeResponse toResponse(NoticeDocument noticeDocument) {
         return NoticeResponse.builder()
             .nttId(noticeDocument.getNttId())
-            .contentNumber(noticeDocument.getContentNumber())
             .title(noticeDocument.getTitle())
             .contentUrl(noticeDocument.getContentUrl())
             .contentImage(noticeDocument.getContentImage())
