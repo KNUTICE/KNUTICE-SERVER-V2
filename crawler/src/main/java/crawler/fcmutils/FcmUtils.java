@@ -13,22 +13,21 @@ import com.google.firebase.messaging.Notification;
 import crawler.service.model.FcmDto;
 import db.domain.token.fcm.FcmTokenDocument;
 import db.domain.token.fcm.FcmTokenMongoRepository;
+import global.utils.NoticeMapper;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-@Component
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class FcmUtils {
 
     private final FcmTokenMongoRepository fcmTokenMongoRepository;
 
-    public FcmUtils(FcmTokenMongoRepository fcmTokenMongoRepository) {
-        this.fcmTokenMongoRepository = fcmTokenMongoRepository;
-    }
-
-    public Message createMessageBuilder(FcmDto dto, String token) {
+    private Message createMessageBuilder(FcmDto dto, String token) {
         return Message.builder()
             .setToken(token)
 //            .setTopic(topic)
@@ -61,7 +60,7 @@ public class FcmUtils {
             .build();
     }
 
-    public List<Message> createMessageBuilderList(FcmDto dto, List<String> tokenList) {
+    private List<Message> createMessageBuilderList(FcmDto dto, List<String> tokenList) {
         return tokenList.stream()
             .map(token -> createMessageBuilder(dto, token))
             .toList();
@@ -76,6 +75,15 @@ public class FcmUtils {
         }
 
         return messageWithTokenList;
+    }
+
+    public List<FcmTokenDocument> getActivateTopicListBy(NoticeMapper noticeMapper) {
+        return switch (noticeMapper) {
+            case GENERAL_NEWS -> fcmTokenMongoRepository.findAllByGeneralNewsTopicTrue();
+            case SCHOLARSHIP_NEWS -> fcmTokenMongoRepository.findAllByScholarshipNewsTopicTrue();
+            case EVENT_NEWS -> fcmTokenMongoRepository.findAllByEventNewsTopicTrue();
+            case ACADEMIC_NEWS -> fcmTokenMongoRepository.findAllByAcademicNewsTopicTrue();
+        };
     }
 
     public FcmDto buildMultipleNotice(List<String> noticeTitleList, String category) {
