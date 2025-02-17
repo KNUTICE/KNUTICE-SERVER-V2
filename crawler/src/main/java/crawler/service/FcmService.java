@@ -78,9 +78,12 @@ public class FcmService {
             .collect(Collectors.toList());
 
         BatchResponse batchResponse = null;
-        int attempt = 0;
+        int attempt = 1;
 
-        while (batchResponse == null && attempt < MAX_RETRIES) {
+        while (batchResponse == null && attempt <= MAX_RETRIES) {
+
+            log.info("전체시도: {}/{}", attempt, MAX_RETRIES);
+
             try {
                 /**
                  * sendEach 메서드는 여러 메시지를 한 번에 보내는 역할을 합니다.
@@ -88,7 +91,6 @@ public class FcmService {
                  * sendEach 메서드는 개별 메세지에 대한 오류를 잡는게 아닌, 전체 요청에 대한 예외를 캐치합니다. 개별 메시지 에러에 대한 사항은 batchResponse 에 담겨 개별 오류로 처리가 가능합니다.
                  */
                 batchResponse = FirebaseMessaging.getInstance().sendEach(messageList);
-                log.info("전송 개수: {} (시도: {}/{})", batchResponse.getResponses().size(), retryCount + 1, MAX_RETRIES);
             } catch (FirebaseMessagingException e) {
                 /**
                  * 전체 배치 메세지 전송에 대해서 전송이 불가능한 경우 예외 발생에 대한 처리.
@@ -148,7 +150,7 @@ public class FcmService {
         List<SendResponse> sendResponseList = batchResponse.getResponses();
 
         List<MessageWithFcmToken> failedMessages = fcmMessageFilter.filterFailedMessage(
-            sendResponseList, targetList);
+                sendResponseList, targetList);
 
         // 재귀 베이스 조건. (삭제 x)
         if (retryCount + 1 >= MAX_RETRIES) {
@@ -156,7 +158,7 @@ public class FcmService {
             return;
         }
 
-        backOff(retryCount);
+        backOff(retryCount + 1);
 
         // 재시도 작업, 재전송에 실패하는 메세지가 없을때까지
         CompletableFuture<Void> retryTokenTask = CompletableFuture.runAsync(() -> {
@@ -171,7 +173,7 @@ public class FcmService {
     }
 
     private void backOff(int attempt) {
-        int waitTime = Math.min(BASE_BACKOFF_TIME * (1 << attempt), MAX_BACKOFF_TIME);
+        int waitTime = Math.min(BASE_BACKOFF_TIME * (1 << (attempt - 1)), MAX_BACKOFF_TIME);
         try {
             log.info("백오프 적용 (시도 {}): {}s 동안 대기", attempt, waitTime);
             TimeUnit.SECONDS.sleep(waitTime); // 1초 동안 대기
