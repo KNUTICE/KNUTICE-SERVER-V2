@@ -78,9 +78,9 @@ public class FcmService {
             .collect(Collectors.toList());
 
         BatchResponse batchResponse = null;
-        int attempt = 1;
+        int attempt = 0;
 
-        while (batchResponse == null && attempt <= MAX_RETRIES) {
+        while (batchResponse == null && attempt < MAX_RETRIES) {
             try {
                 /**
                  * sendEach 메서드는 여러 메시지를 한 번에 보내는 역할을 합니다.
@@ -115,7 +115,7 @@ public class FcmService {
                  * MessagingErrorCode.INVALID_ARGUMENT, -> 형식이 잘못된 경우
                  * MessagingErrorCode.SENDER_ID_MISMATCH, -> fcm 에서 설정된 sender id 와 발신자의 id 가 다른 경우
                  */
-                
+
                 // 재시도 불가능한 오류 처리
                 if (RetryableErrorCode.NOT_RETRYABLE.contains(errorCode)) {
                     log.error("메세지를 전송할 수 없는 상태입니다 (재시도 불가). 에러 코드: {}", errorCode);
@@ -123,7 +123,9 @@ public class FcmService {
                 } else if (RetryableErrorCode.RETRYABLE.contains(errorCode)) {
                     // 재시도가 가능한 오류 처리
                     log.warn("일시적인 오류 발생, 재시도 가능: {} - 시도 횟수: {}", errorCode, attempt);
-                    backOff(attempt++);  // 백오프 후 재시도
+                    attempt = attempt + 1;
+                    backOff(attempt);  // 백오프 후 재시도
+                    continue;
                 }
 
                 // 그 외 예상치 못한 오류는 로깅만 하고 종료
