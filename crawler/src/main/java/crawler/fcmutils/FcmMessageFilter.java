@@ -2,10 +2,10 @@ package crawler.fcmutils;
 
 import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.SendResponse;
-import db.domain.token.fcm.FcmTokenMongoRepository;
+import crawler.fcmutils.dto.FilteredFcmResult;
+import crawler.fcmutils.dto.MessageWithFcmToken;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,9 +15,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class FcmMessageFilter {
 
-    private final FcmTokenMongoRepository fcmTokenMongoRepository;
-
-    public List<MessageWithFcmToken> filterFailedMessage(
+    public FilteredFcmResult filterFailedMessage(
         List<SendResponse> sendResponseList, List<MessageWithFcmToken> targetList
     ) {
         List<MessageWithFcmToken> failedMessageList = new ArrayList<>();
@@ -35,22 +33,8 @@ public class FcmMessageFilter {
             }
         }
 
-        deleteTokens(deleteTokenList);
+        log.info("UNREGISTER TOKEN 개수 : {}", deleteTokenList.size());
+        return new FilteredFcmResult(failedMessageList, deleteTokenList);
 
-        return failedMessageList;
     }
-
-    private void deleteTokens(List<String> deleteTokenList) {
-        if (!deleteTokenList.isEmpty()) {
-            CompletableFuture.runAsync(() -> {
-                try {
-                    fcmTokenMongoRepository.deleteAllById(deleteTokenList);
-                    log.info("[{}] 삭제된 FCM 토큰 개수: {}", Thread.currentThread().getName(), deleteTokenList.size());
-                } catch (Exception e) {
-                    log.error("[{}] FCM 토큰 삭제 중 오류 발생: {}", Thread.currentThread().getName(), e.getMessage(), e);
-                }
-            });
-        }
-    }
-
 }
