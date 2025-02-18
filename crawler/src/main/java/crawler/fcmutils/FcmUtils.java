@@ -13,22 +13,21 @@ import com.google.firebase.messaging.Notification;
 import crawler.service.model.FcmDto;
 import db.domain.token.fcm.FcmTokenDocument;
 import db.domain.token.fcm.FcmTokenMongoRepository;
+import global.utils.NoticeMapper;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-@Component
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class FcmUtils {
 
     private final FcmTokenMongoRepository fcmTokenMongoRepository;
 
-    public FcmUtils(FcmTokenMongoRepository fcmTokenMongoRepository) {
-        this.fcmTokenMongoRepository = fcmTokenMongoRepository;
-    }
-
-    public Message createMessageBuilder(FcmDto dto, String token) {
+    private Message createMessageBuilder(FcmDto dto, String token) {
         return Message.builder()
             .setToken(token)
 //            .setTopic(topic)
@@ -61,7 +60,7 @@ public class FcmUtils {
             .build();
     }
 
-    public List<Message> createMessageBuilderList(FcmDto dto, List<String> tokenList) {
+    private List<Message> createMessageBuilderList(FcmDto dto, List<String> tokenList) {
         return tokenList.stream()
             .map(token -> createMessageBuilder(dto, token))
             .toList();
@@ -76,6 +75,15 @@ public class FcmUtils {
         }
 
         return messageWithTokenList;
+    }
+
+    public List<FcmTokenDocument> getActivateTopicListBy(NoticeMapper noticeMapper) {
+        return switch (noticeMapper) {
+            case GENERAL_NEWS -> fcmTokenMongoRepository.findAllByGeneralNewsTopicTrue();
+            case SCHOLARSHIP_NEWS -> fcmTokenMongoRepository.findAllByScholarshipNewsTopicTrue();
+            case EVENT_NEWS -> fcmTokenMongoRepository.findAllByEventNewsTopicTrue();
+            case ACADEMIC_NEWS -> fcmTokenMongoRepository.findAllByAcademicNewsTopicTrue();
+        };
     }
 
     public FcmDto buildMultipleNotice(List<String> noticeTitleList, String category) {
@@ -93,73 +101,6 @@ public class FcmUtils {
             .title(category)
             .content(title)
             .build();
-    }
-
-    /**
-     * 재전송 실패한 Message 들만 필터링
-     */
-    public List<MessageWithFcmToken> filterFailedMessages(List<MessageWithFcmToken> messageList,
-        BatchResponse batchResponse) {
-
-        List<MessageWithFcmToken> failedMessages = new ArrayList<>();
-        List<String> deleteList = new ArrayList<>(); // 삭제 대상
-
-        for (int i = 0; i < batchResponse.getResponses().size(); i++) {
-
-            FirebaseMessagingException exception = batchResponse.getResponses().get(i).getException();
-            if (exception != null) {
-                MessagingErrorCode messagingErrorCode = exception.getMessagingErrorCode();
-                log.warn("[{}] Messaging Error Code : {}, TOKEN : {}", Thread.currentThread().getName(), messagingErrorCode, messageList.get(i).getFcmToken());
-
-                if ((messagingErrorCode == MessagingErrorCode.UNREGISTERED)) {
-                    deleteList.add(messageList.get(i).getFcmToken());
-                } else {
-                    failedMessages.add(messageList.get(i));
-                }
-
-            }
-        }
-
-        if (!deleteList.isEmpty()) {
-            fcmTokenMongoRepository.deleteAllByFcmTokenIn(deleteList);
-            log.warn("[{}] UNREGISTERED 으로 삭제되는 토큰 개수 : {}", Thread.currentThread().getName(), deleteList.size());
-        }
-
-        return failedMessages;
-    }
-
-    public void updateFailedToken(List<String> failedTokenList) {
-        List<FcmTokenDocument> tokenDocumentList = fcmTokenMongoRepository.findAllById(failedTokenList);
-
-        List<FcmTokenDocument> deleteList = new ArrayList<>(); // 삭제 대상
-        List<FcmTokenDocument> updateList = new ArrayList<>(); // 업데이트 대상
-
-        for (FcmTokenDocument tokenDocument : tokenDocumentList) {
-            tokenDocument.setFailedCount(tokenDocument.getFailedCount() + 1);
-
-            if (tokenDocument.getFailedCount() > 20) {
-                deleteList.add(tokenDocument);
-            } else {
-                updateList.add(tokenDocument);
-            }
-        }
-
-        deleteTokens(deleteList);
-        updateTokens(updateList);
-    }
-
-    private void updateTokens(List<FcmTokenDocument> updateList) {
-        if (!updateList.isEmpty()) {
-            fcmTokenMongoRepository.saveAll(updateList);
-            log.info("FailedCount 증가 토큰 개수: {}", updateList.size());
-        }
-    }
-
-    private void deleteTokens(List<FcmTokenDocument> deleteList) {
-        if (!deleteList.isEmpty()) {
-            fcmTokenMongoRepository.deleteAll(deleteList);
-            log.info("삭제된 토큰 개수: {}", deleteList.size());
-        }
     }
 
 }
