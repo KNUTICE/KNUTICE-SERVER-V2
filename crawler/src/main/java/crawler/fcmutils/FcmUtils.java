@@ -5,11 +5,9 @@ import com.google.firebase.messaging.AndroidNotification;
 import com.google.firebase.messaging.ApnsConfig;
 import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.ApsAlert;
-import com.google.firebase.messaging.BatchResponse;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
+import crawler.fcmutils.dto.MessageWithFcmToken;
 import crawler.service.model.FcmDto;
 import db.domain.token.fcm.FcmTokenDocument;
 import db.domain.token.fcm.FcmTokenMongoRepository;
@@ -18,7 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.web.OffsetScrollPositionHandlerMethodArgumentResolver;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 public class FcmUtils {
 
     private final FcmTokenMongoRepository fcmTokenMongoRepository;
+    private final OffsetScrollPositionHandlerMethodArgumentResolver offsetResolver;
 
     private Message createMessageBuilder(FcmDto dto, String token) {
         return Message.builder()
@@ -101,6 +102,43 @@ public class FcmUtils {
             .title(category)
             .content(title)
             .build();
+    }
+
+    @Transactional
+    public void manageToken(List<String> tokenListToDelete, List<String> tokenListToUpdate) {
+
+        List<FcmTokenDocument> updateTokenList = new ArrayList<>(); // 업데이트 대상
+
+        if (!tokenListToUpdate.isEmpty()) {
+            List<FcmTokenDocument> fcmTokenDocumentList = fcmTokenMongoRepository.findAllById(tokenListToUpdate);
+            for (FcmTokenDocument fcmTokenDocument : fcmTokenDocumentList) {
+                fcmTokenDocument.setFailedCount(fcmTokenDocument.getFailedCount() + 1);
+
+                if (fcmTokenDocument.getFailedCount() > 20) {
+                    tokenListToDelete.add(fcmTokenDocument.getFcmToken());
+                } else {
+                    updateTokenList.add(fcmTokenDocument);
+                }
+            }
+        }
+
+        deleteTokens(tokenListToDelete);
+        updateTokens(updateTokenList);
+
+    }
+
+    private void updateTokens(List<FcmTokenDocument> fcmTokenDocumentList) {
+        if (!fcmTokenDocumentList.isEmpty()) {
+            fcmTokenMongoRepository.saveAll(fcmTokenDocumentList);
+            log.info("FailedCount 증가 토큰 개수: {}", fcmTokenDocumentList.size());
+        }
+    }
+
+    private void deleteTokens(List<String> tokenList) {
+        if (!tokenList.isEmpty()) {
+            fcmTokenMongoRepository.deleteAllById(tokenList);
+            log.info("삭제된 토큰 개수: {}", tokenList.size());
+        }
     }
 
 }

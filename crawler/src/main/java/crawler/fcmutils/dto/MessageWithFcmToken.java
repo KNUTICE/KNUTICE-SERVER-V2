@@ -1,4 +1,4 @@
-package crawler.fcmutils;
+package crawler.fcmutils.dto;
 
 import com.google.firebase.messaging.Message;
 import lombok.AllArgsConstructor;
