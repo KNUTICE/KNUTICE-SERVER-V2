@@ -99,7 +99,7 @@ public class FcmService {
                  * 전체 요청 실패: 네트워크 문제, Firebase 서버 내부 오류, 인증 문제 등으로 인해 전체 요청이 실패하면 FirebaseMessagingException이 발생할 수 있습니다.
                  * sendEach 메서드는 개별 메세지에 대한 오류를 잡는게 아닌, 전체 요청에 대한 예외를 캐치합니다. 개별 메시지 에러에 대한 사항은 batchResponse 에 담겨 개별 오류로 처리가 가능합니다.
                  */
-                batchResponse = FirebaseMessaging.getInstance().sendEach(messageList, true);
+                batchResponse = FirebaseMessaging.getInstance().sendEach(messageList);
                 log.info("전송 개수 : {}", batchResponse.getResponses().size());
             } catch (FirebaseMessagingException e) {
                 /**
