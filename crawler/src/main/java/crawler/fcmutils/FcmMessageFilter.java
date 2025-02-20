@@ -25,7 +25,7 @@ public class FcmMessageFilter {
             if (!sendResponseList.get(i).isSuccessful()) {
                 MessagingErrorCode errorCode = sendResponseList.get(i).getException()
                     .getMessagingErrorCode();
-                if (RetryableErrorCode.RETRYABLE.contains(errorCode)) {
+                if (RetryableErrorCode.RETRYABLE.contains(errorCode) || errorCode == null) {
                     failedMessageList.add(targetList.get(i));
                 } else if (errorCode == MessagingErrorCode.UNREGISTERED) {
                     deleteTokenList.add(targetList.get(i).getFcmToken());
