@@ -33,7 +33,7 @@ public class FcmMessageFilter {
             }
         }
 
-        log.info("UNREGISTER TOKEN 개수 : {}", deleteTokenList.size());
+        log.info("[ALERT] UNREGISTER TOKEN 개수 : {}", deleteTokenList.size());
         return new FilteredFcmResult(failedMessageList, deleteTokenList);
 
     }
