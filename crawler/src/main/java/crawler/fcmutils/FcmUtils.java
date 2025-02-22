@@ -130,14 +130,14 @@ public class FcmUtils {
     private void updateTokens(List<FcmTokenDocument> fcmTokenDocumentList) {
         if (!fcmTokenDocumentList.isEmpty()) {
             fcmTokenMongoRepository.saveAll(fcmTokenDocumentList);
-            log.info("FailedCount 증가 토큰 개수: {}", fcmTokenDocumentList.size());
+            log.info("[ALERT] FailedCount 증가 토큰 개수: {}", fcmTokenDocumentList.size());
         }
     }
 
     private void deleteTokens(List<String> tokenList) {
         if (!tokenList.isEmpty()) {
             fcmTokenMongoRepository.deleteAllById(tokenList);
-            log.info("삭제된 토큰 개수: {}", tokenList.size());
+            log.info("[ALERT] 삭제된 토큰 개수: {}", tokenList.size());
         }
     }
 
