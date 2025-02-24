@@ -18,18 +18,18 @@ public class NoticeUpdater {
     private final NoticeProcessor noticeProcessor;
     private final FcmService fcmService;
 
-    public void updateNoticeTitles (List<NoticeDto> titles, NoticeMapper noticeMapper, final boolean boot)
+    public void updateNoticeTitles (List<NoticeDto> noticeDtoList, NoticeMapper noticeMapper, final boolean boot)
             throws FirebaseMessagingException {
 
-        boolean isNotUpdated = noticeProcessor.noticeUpdate(titles, noticeMapper, boot);
+        boolean isNotUpdated = noticeProcessor.noticeUpdate(noticeDtoList, noticeMapper, boot);
 
         if(!boot && !isNotUpdated) {
             log.info("Not initial start and updated new notices");
-            Optional<List<String>> newNoticeTitleList = noticeProcessor.getUpdateNoticeMap(noticeMapper);
-            newNoticeTitleList.ifPresent(newNoticeTitles -> {
-                log.info("updateNoticeTitles check lists size : {}", newNoticeTitles.size());
+            Optional<List<NoticeDto>> newNoticeDtoList = noticeProcessor.getUpdateNoticeMap(noticeMapper);
+            newNoticeDtoList.ifPresent(newNoticeDtos -> {
+                log.info("updateNoticeTitles check lists size : {}", newNoticeDtos.size());
                 try {
-                    fcmService.fcmTrigger(newNoticeTitles, noticeMapper);
+                    fcmService.fcmTrigger(newNoticeDtos);
                 } catch (FirebaseMessagingException e) {
                     log.error("FirebaseMessaging Exception e");
                     throw new RuntimeException(e);
