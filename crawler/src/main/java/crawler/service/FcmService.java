@@ -7,6 +7,7 @@ import crawler.fcmutils.dto.FilteredFcmResult;
 import crawler.fcmutils.dto.MessageWithFcmToken;
 import crawler.fcmutils.RetryableErrorCode;
 import crawler.service.model.FcmDto;
+import crawler.worker.model.NoticeDto;
 import db.domain.token.fcm.FcmTokenDocument;
 import global.utils.NoticeMapper;
 
@@ -34,9 +35,9 @@ public class FcmService {
     private final List<String> tokenListToDelete = new ArrayList<>(); // 최대 재시도 횟수 후 삭제할 토큰 모음
     private final List<String> failedTokenListToUpdate = new ArrayList<>(); // 최대 재시도 횟수 후 실패한 토큰 모음
 
-    private void sendToTopic(FcmDto fcmDto, NoticeMapper noticeMapper)
+    private void sendToTopic(FcmDto fcmDto)
         throws FirebaseMessagingException {
-        List<FcmTokenDocument> fcmTokenDocumentList = fcmUtils.getActivateTopicListBy(noticeMapper);
+        List<FcmTokenDocument> fcmTokenDocumentList = fcmUtils.getActivateTopicListBy(fcmDto.getNoticeName());
 
         List<String> deviceTokenList = fcmTokenDocumentList.stream()
             .map(FcmTokenDocument::getFcmToken)
@@ -203,19 +204,19 @@ public class FcmService {
         failedTokenListToUpdate.clear();
     }
 
-    public void fcmTrigger(List<String> noticeTitleList, NoticeMapper noticeMapper)
+    public void fcmTrigger(List<NoticeDto> noticeDtoList)
         throws FirebaseMessagingException {
-        String category = "[" + noticeMapper.getCategory() + "]";
+        String category = "[" + noticeDtoList.get(0).getNoticeMapper().getCategory() + "]";
 
-        noticeTitleList.forEach(title -> log.info("[ALERT] 새로운 공지 - {} : {}", category, title));
+        noticeDtoList.forEach(noticeDto -> log.info("[ALERT] 새로운 공지 - {} : {}", category, noticeDto.getTitle()));
 
-        if (noticeTitleList.size() >= 3) {
-            sendToTopic(fcmUtils.buildMultipleNotice(noticeTitleList, category), noticeMapper);
+        if (noticeDtoList.size() >= 3) {
+            sendToTopic(fcmUtils.buildMultipleNotice(noticeDtoList));
         } else {
-            noticeTitleList.forEach(title -> {
-                FcmDto fcmDto = fcmUtils.buildSingleNotice(category, title);
+            noticeDtoList.forEach(noticeDto -> {
+                FcmDto fcmDto = fcmUtils.buildSingleNotice(noticeDto);
                 try {
-                    sendToTopic(fcmDto, noticeMapper);
+                    sendToTopic(fcmDto);
                 } catch (FirebaseMessagingException e) {
                     throw new RuntimeException(e);
                 }

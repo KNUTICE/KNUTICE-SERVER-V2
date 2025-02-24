@@ -9,6 +9,7 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import crawler.fcmutils.dto.MessageWithFcmToken;
 import crawler.service.model.FcmDto;
+import crawler.worker.model.NoticeDto;
 import db.domain.token.fcm.FcmTokenDocument;
 import db.domain.token.fcm.FcmTokenMongoRepository;
 import global.utils.NoticeMapper;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.web.OffsetScrollPositionHandlerMethodArgumentResolver;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class FcmUtils {
 
     private final FcmTokenMongoRepository fcmTokenMongoRepository;
-    private final OffsetScrollPositionHandlerMethodArgumentResolver offsetResolver;
 
     private Message createMessageBuilder(FcmDto dto, String token) {
         return Message.builder()
@@ -39,6 +38,7 @@ public class FcmUtils {
 //                        .setImage(dto.getContentImage())
                     .build()
             )
+            .putData("contentUrl",dto.getContentUrl())
             .setAndroidConfig(
                 AndroidConfig.builder()
                     .setNotification(
@@ -87,20 +87,24 @@ public class FcmUtils {
         };
     }
 
-    public FcmDto buildMultipleNotice(List<String> noticeTitleList, String category) {
+    public FcmDto buildMultipleNotice(List<NoticeDto> noticeDtoList) {
         return FcmDto.builder()
-            .title(category)
-            .content(noticeTitleList.get(noticeTitleList.size() - 1)
+            .title(noticeDtoList.get(0).getNoticeMapper().getCategory())
+            .content(noticeDtoList.get(noticeDtoList.size() - 1).getTitle()
                 + "...외 "
-                + (noticeTitleList.size() - 1)
+                + (noticeDtoList.size() - 1)
                 + "개의 공지가 작성되었어요!")
+            .noticeName(noticeDtoList.get(0).getNoticeMapper())
+            .contentUrl(noticeDtoList.get(0).getContentUrl())
             .build();
     }
 
-    public FcmDto buildSingleNotice(String category, String title) {
+    public FcmDto buildSingleNotice(NoticeDto noticeDto) {
         return FcmDto.builder()
-            .title(category)
-            .content(title)
+            .title(noticeDto.getNoticeMapper().getCategory())
+            .content(noticeDto.getTitle())
+            .noticeName(noticeDto.getNoticeMapper())
+            .contentUrl(noticeDto.getContentUrl())
             .build();
     }
 

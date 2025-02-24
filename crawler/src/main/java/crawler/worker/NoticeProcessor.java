@@ -28,7 +28,7 @@ public class NoticeProcessor {
 
     private final NoticeMongoRepository noticeMongoRepository;
     private final MaxNoticeIdsMongoRepository maxNoticeIdsRepository;
-    private static final Map<NoticeMapper, List<String>> newNoticeTitlesTable = new ConcurrentHashMap<>();
+    private static final Map<NoticeMapper, List<NoticeDto>> newNoticeDtoTable = new ConcurrentHashMap<>();
 
     /*
      * 클래스가 최초 한 번 로딩될 때, 초기화
@@ -41,7 +41,7 @@ public class NoticeProcessor {
     private static void createNewNoticeTitlesTable() {
         Stream.of(NoticeMapper.values())
                 .forEach(noticeMapperData -> {
-                            newNoticeTitlesTable.computeIfAbsent(noticeMapperData, key -> new ArrayList<>());
+                    newNoticeDtoTable.computeIfAbsent(noticeMapperData, key -> new ArrayList<>());
                         }
                 );
     }
@@ -86,17 +86,17 @@ public class NoticeProcessor {
          */
 
 
-        List<String> fcmNoticeList = new ArrayList<>();
+        List<NoticeDto> fcmNoticeList = new ArrayList<>();
         noticeList.forEach(noticeDto -> {
             boolean isDuplication = noticeDto.isDuplication();
             boolean isSave = changeMaxNttId(noticeDto, announcementMaxNttId, noticeMaxNttId, targetMaxNttIdForAnnouncement, targetMaxNttIdForNotice, isDuplication);
             // save 대상이라면
             if(isSave) {
-                saveNoticeDocment(noticeDto);
+                saveNoticeDocument(noticeDto);
             }
             if (!boot) {
                 log.info("New fcm titles : {}", noticeDto.getTitle());
-                addNoticeTitle(noticeDto, fcmNoticeList);
+                addNoticeDto(noticeDto, fcmNoticeList);
             }
         });
 
@@ -123,7 +123,7 @@ public class NoticeProcessor {
         /**
          * 새로운 게시글의 제목이 fcmNoticeList 에 저장되고, 그 값을 newNoticeTables 에 저장.
          */
-        newNoticeTitlesTable.put(noticeMapper, fcmNoticeList);
+        newNoticeDtoTable.put(noticeMapper, fcmNoticeList);
         return fcmNoticeList.isEmpty();
     }
 
@@ -182,25 +182,25 @@ public class NoticeProcessor {
         return false;
     }
 
-    public Optional<List<String>> getUpdateNoticeMap(NoticeMapper noticeMapper) {
+    public Optional<List<NoticeDto>> getUpdateNoticeMap(NoticeMapper noticeMapper) {
         log.info("{} Execute getUpdateNoticeMap", noticeMapper);
-        List<String> newTitlesList = newNoticeTitlesTable.get(noticeMapper);
+        List<NoticeDto> newNoticeDtoList = newNoticeDtoTable.get(noticeMapper);
 
         // 게시글이 존재한다면
-        if(!newTitlesList.isEmpty()) {
+        if(!newNoticeDtoList.isEmpty()) {
             log.info("{} newTitleList is not empty", noticeMapper);
-            newTitlesList.forEach(data -> {
-                log.info("title and Size : {}", data);
+            newNoticeDtoList.forEach(data -> {
+                log.info("title and Size : {}", data.getTitle());
             });
         } else {
             return Optional.empty();
         }
         // 리스트를 초기화
-        newNoticeTitlesTable.put(noticeMapper, new ArrayList<>());
-        if(newNoticeTitlesTable.get(noticeMapper).isEmpty()) {
+        newNoticeDtoTable.put(noticeMapper, new ArrayList<>());
+        if(newNoticeDtoTable.get(noticeMapper).isEmpty()) {
             log.info("{} newNoticeTitles table values initialized", noticeMapper);
         }
-        return Optional.of(newTitlesList);
+        return Optional.of(newNoticeDtoList);
     }
 
 
@@ -208,7 +208,7 @@ public class NoticeProcessor {
      * for 문에서 참조로 전달한 crawling news 객체.
      */
 
-    public void saveNoticeDocment(NoticeDto noticeDto) {
+    public void saveNoticeDocument(NoticeDto noticeDto) {
         log.info("SaveNoticeEntity nttId : {}, notice : {}", noticeDto.getNttId(), noticeDto.getNoticeMapper());
         noticeMongoRepository.save(
                 NoticeDocument.builder()
@@ -228,9 +228,9 @@ public class NoticeProcessor {
      *
      * @author itstime0809
      */
-    private void addNoticeTitle(final NoticeDto noticeDto, List<String> fcmNoticeList) {
+    private void addNoticeDto(final NoticeDto noticeDto, List<NoticeDto> fcmNoticeList) {
         log.info("Notice : {} Execute addNoticeTitle : {}", noticeDto.getNoticeMapper(), noticeDto.getTitle());
-        fcmNoticeList.add(noticeDto.getTitle());
+        fcmNoticeList.add(noticeDto);
     }
 
     /**
