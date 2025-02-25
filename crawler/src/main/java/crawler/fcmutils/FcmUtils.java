@@ -33,12 +33,18 @@ public class FcmUtils {
 //            .setTopic(topic)
             .setNotification(
                 Notification.builder()
-                    .setTitle(dto.getTitle())
+                    .setTitle(dto.getTitle()) // 일반공지, 학사공지 등
                     .setBody(dto.getContent())
-//                        .setImage(dto.getContentImage())
+                    .setImage(dto.getContentImage())
                     .build()
             )
+            .putData("nttId", String.valueOf(dto.getNttId()))
+            .putData("contentTitle", dto.getContent())
             .putData("contentUrl",dto.getContentUrl())
+            .putData("contentImage", dto.getContentImage())
+            .putData("departmentName", dto.getDepartmentName())
+            .putData("registeredAt", dto.getRegisteredAt())
+            .putData("noticeName", dto.getNoticeName().getCategory())
             .setAndroidConfig(
                 AndroidConfig.builder()
                     .setNotification(
@@ -52,7 +58,7 @@ public class FcmUtils {
                 ApnsConfig.builder()
                     .setAps(Aps.builder()
                         .setAlert(ApsAlert.builder()
-//                                .setLaunchImage(dto.getContentImage())
+                            .setLaunchImage(dto.getContentImage())
                             .build())
                         .setSound("default")
                         .build())
@@ -89,6 +95,7 @@ public class FcmUtils {
 
     public FcmDto buildMultipleNotice(List<NoticeDto> noticeDtoList) {
         return FcmDto.builder()
+            .nttId(noticeDtoList.get(0).getNttId())
             .title(noticeDtoList.get(0).getNoticeMapper().getCategory())
             .content(noticeDtoList.get(noticeDtoList.size() - 1).getTitle()
                 + "...외 "
@@ -96,15 +103,22 @@ public class FcmUtils {
                 + "개의 공지가 작성되었어요!")
             .noticeName(noticeDtoList.get(0).getNoticeMapper())
             .contentUrl(noticeDtoList.get(0).getContentUrl())
+            .contentImage(noticeDtoList.get(0).getContentImage())
+            .departmentName(noticeDtoList.get(0).getDepartName())
+            .registeredAt(noticeDtoList.get(0).getRegisteredAt())
             .build();
     }
 
     public FcmDto buildSingleNotice(NoticeDto noticeDto) {
         return FcmDto.builder()
+            .nttId(noticeDto.getNttId())
             .title(noticeDto.getNoticeMapper().getCategory())
             .content(noticeDto.getTitle())
             .noticeName(noticeDto.getNoticeMapper())
             .contentUrl(noticeDto.getContentUrl())
+            .contentImage(noticeDto.getContentImage())
+            .departmentName(noticeDto.getDepartName())
+            .registeredAt(noticeDto.getRegisteredAt())
             .build();
     }
 

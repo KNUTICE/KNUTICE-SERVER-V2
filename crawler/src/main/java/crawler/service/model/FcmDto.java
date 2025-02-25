@@ -12,12 +12,20 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FcmDto {
 
-    private String title;
+    private Long nttId;
 
-    private String content;
+    private String title; // 일반소식, 학사공지 등등...
+
+    private String content; // 제목내용
 
     private NoticeMapper noticeName;
 
     private String contentUrl;
+
+    private String contentImage;
+
+    private String departmentName;
+
+    private String registeredAt;
 
 }
