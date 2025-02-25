@@ -1,0 +1,31 @@
+server:
+  port: ${CRAWLER_PORT}
+
+spring:
+  application:
+    name: knutice-crawler
+
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+      database: ${MONGO_DATABASE}
+
+firebase:
+  secret:
+    key:
+      path: ${FIREBASE_KEY_PATH}
+
+logging:
+  level:
+    org:
+      springframework.web: DEBUG
+      hibernate: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health
+  metrics:
+    tags:
+      application: ${spring.application.name}
