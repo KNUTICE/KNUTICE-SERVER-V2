@@ -40,7 +40,7 @@ public class FcmUtils {
             )
             .putData("nttId", String.valueOf(dto.getNttId()))
             .putData("contentTitle", dto.getContent())
-            .putData("contentUrl",dto.getContentUrl())
+            .putData("contentUrl",dto.getContentUrl() != null ? dto.getContentUrl() : "")
             .putData("contentImage", dto.getContentImage())
             .putData("departmentName", dto.getDepartmentName())
             .putData("registeredAt", dto.getRegisteredAt())
