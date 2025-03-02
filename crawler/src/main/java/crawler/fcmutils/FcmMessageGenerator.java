@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class MessageGenerator {
+public class FcmMessageGenerator {
 
     private final MessageFactory messageFactory;
 
