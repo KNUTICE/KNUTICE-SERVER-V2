@@ -27,62 +27,6 @@ public class FcmUtils {
 
     private final FcmTokenMongoRepository fcmTokenMongoRepository;
 
-    private Message createMessageBuilder(FcmDto dto, String token) {
-        return Message.builder()
-            .setToken(token)
-//            .setTopic(topic)
-            .setNotification(
-                Notification.builder()
-                    .setTitle(dto.getTitle()) // 일반공지, 학사공지 등
-                    .setBody(dto.getContent())
-                    .setImage(dto.getContentImage())
-                    .build()
-            )
-            .putData("nttId", String.valueOf(dto.getNttId()))
-            .putData("contentTitle", dto.getContent())
-            .putData("contentUrl",dto.getContentUrl())
-            .putData("contentImage", dto.getContentImage() != null ? dto.getContentImage() : "")
-            .putData("departmentName", dto.getDepartmentName())
-            .putData("registeredAt", dto.getRegisteredAt())
-            .putData("noticeName", dto.getNoticeName().getCategory())
-            .setAndroidConfig(
-                AndroidConfig.builder()
-                    .setNotification(
-                        AndroidNotification.builder()
-                            .setSound("default")
-                            .build()
-                    )
-                    .build()
-            )
-            .setApnsConfig(
-                ApnsConfig.builder()
-                    .setAps(Aps.builder()
-                        .setAlert(ApsAlert.builder()
-                            .setLaunchImage(dto.getContentImage())
-                            .build())
-                        .setSound("default")
-                        .build())
-                    .build()
-            )
-            .build();
-    }
-
-    private List<Message> createMessageBuilderList(FcmDto dto, List<String> tokenList) {
-        return tokenList.stream()
-            .map(token -> createMessageBuilder(dto, token))
-            .toList();
-    }
-
-    public List<MessageWithFcmToken> createMessagesWithTokenList(FcmDto fcmDto, List<String> deviceTokenList) {
-        List<MessageWithFcmToken> messageWithTokenList = new ArrayList<>();
-
-        for (String token : deviceTokenList) {
-            Message message = createMessageBuilder(fcmDto, token);
-            messageWithTokenList.add(new MessageWithFcmToken(message, token));
-        }
-
-        return messageWithTokenList;
-    }
 
     public List<FcmTokenDocument> getActivateTopicListBy(NoticeMapper noticeMapper) {
         return switch (noticeMapper) {
