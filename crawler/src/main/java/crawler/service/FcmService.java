@@ -3,6 +3,7 @@ package crawler.service;
 import com.google.firebase.messaging.*;
 import crawler.fcmutils.FcmMessageFilter;
 import crawler.fcmutils.FcmUtils;
+import crawler.fcmutils.MessageGenerator;
 import crawler.fcmutils.dto.FilteredFcmResult;
 import crawler.fcmutils.dto.MessageWithFcmToken;
 import crawler.fcmutils.RetryableErrorCode;
@@ -24,6 +25,7 @@ public class FcmService {
 
     // DEPENDENCY
     private final FcmMessageFilter fcmMessageFilter;
+    private final MessageGenerator messageGenerator;
     private final FcmUtils fcmUtils;
 
 
@@ -57,7 +59,7 @@ public class FcmService {
             return;
         }
 
-        List<MessageWithFcmToken> messageWithTokenList = fcmUtils.createMessagesWithTokenList(
+        List<MessageWithFcmToken> messageWithTokenList = messageGenerator.generateMessageBuilderList(
             fcmDto, deviceTokenList);
 
         int tokenSize = (int) Math.ceil((double) messageWithTokenList.size() / 500);
