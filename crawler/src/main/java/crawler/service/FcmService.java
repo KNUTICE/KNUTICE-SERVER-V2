@@ -2,7 +2,9 @@ package crawler.service;
 
 import com.google.firebase.messaging.*;
 import crawler.fcmutils.FcmMessageFilter;
-import crawler.fcmutils.FcmUtils;
+import crawler.fcmutils.FcmTokenManager;
+import crawler.fcmutils.FcmDtoBuilder;
+import crawler.fcmutils.FcmMessageGenerator;
 import crawler.fcmutils.dto.FilteredFcmResult;
 import crawler.fcmutils.dto.MessageWithFcmToken;
 import crawler.fcmutils.RetryableErrorCode;
@@ -24,7 +26,9 @@ public class FcmService {
 
     // DEPENDENCY
     private final FcmMessageFilter fcmMessageFilter;
-    private final FcmUtils fcmUtils;
+    private final FcmMessageGenerator fcmMessageGenerator;
+    private final FcmTokenManager fcmTokenManager;
+    private final FcmDtoBuilder fcmDtoBuilder;
 
 
     // CONSTANT
@@ -41,7 +45,7 @@ public class FcmService {
 
     private void sendToTopic(FcmDto fcmDto)
         throws FirebaseMessagingException {
-        List<FcmTokenDocument> fcmTokenDocumentList = fcmUtils.getActivateTopicListBy(fcmDto.getNoticeName());
+        List<FcmTokenDocument> fcmTokenDocumentList = fcmTokenManager.getActivateTopicListBy(fcmDto.getNoticeName());
 
         List<String> deviceTokenList = fcmTokenDocumentList.stream()
             .map(FcmTokenDocument::getFcmToken)
@@ -57,7 +61,7 @@ public class FcmService {
             return;
         }
 
-        List<MessageWithFcmToken> messageWithTokenList = fcmUtils.createMessagesWithTokenList(
+        List<MessageWithFcmToken> messageWithTokenList = fcmMessageGenerator.generateMessageBuilderList(
             fcmDto, deviceTokenList);
 
         int tokenSize = (int) Math.ceil((double) messageWithTokenList.size() / 500);
@@ -203,7 +207,7 @@ public class FcmService {
     }
 
     private void clearAndManageToken() {
-        fcmUtils.manageToken(tokenListToDelete, failedTokenListToUpdate);
+        fcmTokenManager.manageToken(tokenListToDelete, failedTokenListToUpdate);
         tokenListToDelete.clear();
         failedTokenListToUpdate.clear();
     }
@@ -215,10 +219,10 @@ public class FcmService {
         noticeDtoList.forEach(noticeDto -> log.info("[ALERT] 새로운 공지 - {} : {}", category, noticeDto.getTitle()));
 
         if (noticeDtoList.size() >= 3) {
-            sendToTopic(fcmUtils.buildMultipleNotice(noticeDtoList));
+            sendToTopic(fcmDtoBuilder.createMultipleFcmMessage(noticeDtoList));
         } else {
             noticeDtoList.forEach(noticeDto -> {
-                FcmDto fcmDto = fcmUtils.buildSingleNotice(noticeDto);
+                FcmDto fcmDto = fcmDtoBuilder.createSingleFcmMessage(noticeDto);
                 try {
                     sendToTopic(fcmDto);
                 } catch (FirebaseMessagingException e) {
