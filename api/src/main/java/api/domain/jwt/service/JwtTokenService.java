@@ -53,6 +53,7 @@ public class JwtTokenService {
     }
 
     public JwtTokenInfo validationToken(String token) {
+
         Map<String, Object> userData = jwtTokenHelperIfs.validationTokenWithThrow(token);
 
         Object userId = userData.get("userId");
