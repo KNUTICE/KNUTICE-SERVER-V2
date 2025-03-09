@@ -13,6 +13,8 @@ repositories {
 
 dependencies {
 
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
     // Firebase
     implementation group: 'com.google.firebase', name: 'firebase-admin', version: '9.3.0'
 
