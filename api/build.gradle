@@ -48,12 +48,21 @@ dependencies {
     // In-Memory Mongo
     testImplementation 'de.bwaldvogel:mongo-java-server:1.46.0'
 
+    // OpenFeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation project(":db")
     implementation project(":global")
 
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2024.0.0"
+    }
 }
 
 test {
