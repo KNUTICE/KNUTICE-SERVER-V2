@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -67,6 +68,10 @@ public class FcmService {
         int tokenSize = (int) Math.ceil((double) messageWithTokenList.size() / 500);
 
         if (tokenSize == 1) {
+            // MDC(Mapped Diagnostic Context)
+            // 활용해서, 부모 스레드의 이름을 저장.
+            // 부모 스레드에서 파생된 자식 스레드를 추적하기 위함.
+            MDC.put("parentThread", Thread.currentThread().getName());
             processBatch(messageWithTokenList, BASE_RETRY_COUNT);
         } else {
             log.info("배치 처리 병렬 실행 시작 (토큰 집합 수: {})", tokenSize);
@@ -82,8 +87,8 @@ public class FcmService {
             }
             CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0])).join();
         }
-
         clearAndManageToken();
+        log.info("[ALERT] 배치 작업 종료");
     }
 
     // 토큰 집합이 1개인 경우
@@ -96,11 +101,11 @@ public class FcmService {
         BatchResponse batchResponse = null;
         int totalSendAttempts = 1;
 
-        log.info("[ALERT] 시도(retry) : {}/{}", retryCount + 1, MAX_RETRIES);
+        log.info("[ALERT] 재귀시도(retry) : {}/{}, 부모 스레드 : {}", retryCount + 1, MAX_RETRIES, MDC.get("parentThread"));
 
         while (batchResponse == null && totalSendAttempts <= MAX_RETRIES) {
 
-            log.info("[ALERT] 시도(attempt) : {}/{}", totalSendAttempts, MAX_RETRIES);
+            log.info("[ALERT] 전체시도(attempt)ㅏ : {}/{}, 부모 스레드 : {}", totalSendAttempts, MAX_RETRIES, MDC.get("parentThread"));
 
             try {
                 /**
@@ -109,7 +114,7 @@ public class FcmService {
                  * sendEach 메서드는 개별 메세지에 대한 오류를 잡는게 아닌, 전체 요청에 대한 예외를 캐치합니다. 개별 메시지 에러에 대한 사항은 batchResponse 에 담겨 개별 오류로 처리가 가능합니다.
                  */
                 batchResponse = FirebaseMessaging.getInstance().sendEach(messageList);
-                log.info("[ALERT] 전송 개수(실패 포함) : {}", batchResponse.getResponses().size());
+                log.info("[ALERT] 전송 개수(실패 포함) : {}, 부모 스레드 : {}", batchResponse.getResponses().size(), MDC.get("parentThread"));
             } catch (FirebaseMessagingException e) {
                 /**
                  * 전체 배치 메세지 전송에 대해서 전송이 불가능한 경우 예외 발생에 대한 처리.
@@ -125,7 +130,7 @@ public class FcmService {
                 MessagingErrorCode errorCode = e.getMessagingErrorCode();
 
                 if (errorCode == null) {
-                    log.error("에러 코드가 없는 FirebaseMessagingException 발생: {}", e.getMessage());
+                    log.error("에러 코드가 없는 FirebaseMessagingException 발생: {}, 부모 스레드 : {}", e.getMessage(), MDC.get("parentThread"));
                     return;
                 }
 
@@ -138,30 +143,30 @@ public class FcmService {
 
                 // 재시도 불가능한 오류 처리
                 if (RetryableErrorCode.NOT_RETRYABLE.contains(errorCode)) {
-                    log.error("메세지를 전송할 수 없는 상태입니다 (재시도 불가). 에러 코드: {}", errorCode);
+                    log.error("메세지를 전송할 수 없는 상태입니다 (재시도 불가). 에러 코드: {}, 부모 스레드 : {}", errorCode, MDC.get("parentThread"));
                     return;
                 } else if (RetryableErrorCode.RETRYABLE.contains(errorCode)) {
                     // 재시도가 가능한 오류 처리
-                    log.warn("일시적인 오류 발생, 재시도 가능: {} - 시도 횟수: {}", errorCode, totalSendAttempts);
+                    log.warn("일시적인 오류 발생, 재시도 가능: {} - 시도 횟수: {}, 부모 스레드 : {}", errorCode, totalSendAttempts, MDC.get("parentThread"));
                     totalSendAttempts = totalSendAttempts + 1;
                     backOff(totalSendAttempts);  // 백오프 후 재시도
                     continue;
                 }
 
                 // 그 외 예상치 못한 오류는 로깅만 하고 종료
-                log.error("예상치 못한 오류가 발생했습니다: {} - {}번 시도", errorCode, totalSendAttempts);
+                log.error("예상치 못한 오류가 발생했습니다: {} - {}번 시도, 부모 스레드 : {}", errorCode, totalSendAttempts, MDC.get("parentThread"));
                 return;
             }
         }
 
         // 전체 전송 이후, backoff 최대 재시도 횟수가 넘어서 while 문이 종료된 경우
         if (batchResponse == null) {
-            log.error("최대 재전송 횟수 시도 이후, 전송에 실패한 경우 종료");
+            log.error("최대 재전송 횟수 시도 이후, 전송에 실패한 경우 종료, 부모 스레드 : {}", MDC.get("parentThread"));
             return;
         }
         // 전체 전송 이후, 전송에 성공했고, 전송된 값들중에서 실패한 토큰이 없는 경우에는 재시도 로직 및 삭제 로직을 적용할 필요가 없음.
         if (batchResponse.getFailureCount() == 0) {
-            log.info("[ALERT] FCM 전송 전체 성공 (총 {}개)", batchResponse.getSuccessCount());
+            log.info("[ALERT] FCM 전송 전체 성공 (총 {}개), 부모 스레드 : {}", batchResponse.getSuccessCount(), MDC.get("parentThread"));
             return;
         }
 
@@ -171,7 +176,7 @@ public class FcmService {
 
         // 재귀 베이스 조건. (삭제 x)
         if (retryCount + 1 >= MAX_RETRIES) {
-            log.error("[ALERT] 최대 재시도 횟수가 초과되었습니다.");
+            log.error("[ALERT] 최대 재시도 횟수가 초과되었습니다. 부모 스레드 : {}", MDC.get("parentThread"));
             for (MessageWithFcmToken token : filteredFcmResult.getFailedMessageList()) {
                 failedTokenListToUpdate.add(token.getFcmToken());
             }
@@ -184,7 +189,7 @@ public class FcmService {
         CompletableFuture<Void> retryTokenTask = CompletableFuture.runAsync(() -> {
             List<MessageWithFcmToken> failedMessageList = filteredFcmResult.getFailedMessageList();
             if (!failedMessageList.isEmpty()) {
-                log.info("[ALERT] 재시도 메시지 개수 : {}", failedMessageList.size());
+                log.info("[ALERT] 재시도 메시지 개수 : {}, 부모 스레드 : {}", failedMessageList.size(), MDC.get("parentThread"));
                 processBatch(failedMessageList, retryCount + 1);
             }
         });

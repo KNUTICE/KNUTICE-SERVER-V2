@@ -2,7 +2,7 @@ package api.domain.report.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import api.common.exception.fcm.FcmTokenNotFoundException;
+import api.common.exception.fcm.FcmException;
 import api.config.AcceptanceTestWithMongo;
 import api.domain.fcm.business.FcmTokenBusiness;
 import api.domain.fcm.controller.model.FcmTokenRequest;
@@ -46,7 +46,7 @@ class ReportOpenApiControllerTest extends AcceptanceTestWithMongo {
         reportRequest.setFcmToken("my_test_token"); // 존재하지 않는 FCM 토큰
 
         // When & Then
-        assertThrows(FcmTokenNotFoundException.class, () -> reportBusiness.submitReport(reportRequest));
+        assertThrows(FcmException.FcmTokenNotFoundException.class, () -> reportBusiness.submitReport(reportRequest));
     }
 
 }

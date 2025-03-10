@@ -1,7 +1,7 @@
 package api.domain.notice.service;
 
 import api.common.error.NoticeErrorCode;
-import api.common.exception.notice.NoticeNotFoundException;
+import api.common.exception.notice.NoticeException;
 import db.domain.notice.NoticeDocument;
 import db.domain.notice.NoticeMongoRepository;
 import db.domain.notice.NoticeQueryRepository;
@@ -23,7 +23,7 @@ public class NoticeService {
         List<NoticeDocument> noticeList = noticeQueryRepository.findNoticeBy(qNoticeDto);
 
         if (noticeList.isEmpty()) {
-            throw new NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
+            throw new NoticeException.NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
         }
 
         return noticeList;
@@ -37,14 +37,14 @@ public class NoticeService {
         List<NoticeDocument> noticeSearchList = noticeQueryRepository.findSearchBy(
             qNoticeSearchDto);
         if (noticeSearchList.isEmpty()) {
-            throw new NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
+            throw new NoticeException.NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
         }
         return noticeSearchList;
     }
 
     public NoticeDocument getNoticeBy(Long nttId) {
         return noticeMongoRepository.findById(nttId)
-            .orElseThrow(() -> new NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND));
+            .orElseThrow(() -> new NoticeException.NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND));
     }
 
     public Boolean existsNoticeBy(Long nttId) {
@@ -54,7 +54,7 @@ public class NoticeService {
     public List<NoticeDocument> getNoticeList(List<Long> nttIdList) {
         List<NoticeDocument> noticeDocumentList = noticeMongoRepository.findAllById(nttIdList);
         if (noticeDocumentList.isEmpty()) {
-            throw new NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
+            throw new NoticeException.NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
         }
         return noticeDocumentList;
     }

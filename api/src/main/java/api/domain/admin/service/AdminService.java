@@ -1,7 +1,7 @@
 package api.domain.admin.service;
 
 import api.common.error.ReportErrorCode;
-import api.common.exception.report.ReportNotFoundException;
+import api.common.exception.report.ReportException;
 import db.domain.notice.NoticeDocument;
 import db.domain.notice.NoticeMongoRepository;
 import db.domain.report.ReportDocument;
@@ -49,7 +49,7 @@ public class AdminService {
 
     public ReportDocument getReportBy(String reportId) {
         return reportMongoRepository.findById(reportId)
-            .orElseThrow(() -> new ReportNotFoundException(ReportErrorCode.REPORT_NOT_FOUND));
+            .orElseThrow(() -> new ReportException.ReportNotFoundException(ReportErrorCode.REPORT_NOT_FOUND));
     }
 
     public List<FcmTokenDocument> getFcmTokenList() {

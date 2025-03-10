@@ -1,7 +1,7 @@
 package api.domain.topic.business;
 
 import api.common.error.TopicErrorCode;
-import api.common.exception.topic.TopicNotFoundException;
+import api.common.exception.topic.TopicException;
 import api.domain.fcm.service.FcmTokenService;
 import api.domain.topic.controller.model.TopicSubscriptionRequest;
 import db.domain.token.fcm.FcmTokenDocument;
@@ -45,7 +45,7 @@ public class TopicBusiness {
                 fcmTokenDocument.setAcademicNewsTopic(topicSubscriptionRequest.getIsSubscribed());
                 break;
             default:
-                throw new TopicNotFoundException(TopicErrorCode.TOPIC_NOT_FOUND);
+                throw new TopicException.TopicNotFoundException(TopicErrorCode.TOPIC_NOT_FOUND);
         }
     }
 
