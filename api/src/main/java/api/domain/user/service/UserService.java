@@ -1,9 +1,7 @@
 package api.domain.user.service;
 
 import api.common.error.UserErrorCode;
-import api.common.exception.user.UserNotFoundException;
-import api.common.exception.user.EmailExistsException;
-import api.common.exception.user.PasswordMismatchException;
+import api.common.exception.user.UserException;
 import api.domain.user.controller.model.login.UserLoginRequest;
 import db.domain.user.UserDocument;
 import db.domain.user.UserMongoRepository;
@@ -29,7 +27,7 @@ public class UserService {
     public Boolean existsByEmailWithThrow(String email) {
         boolean existsByEmail = userMongoRepository.existsByAccount_Email(email);
         if (existsByEmail) {
-            throw new EmailExistsException(UserErrorCode.EMAIL_EXISTS);
+            throw new UserException.EmailExistsException(UserErrorCode.EMAIL_EXISTS);
         }
         return true;
     }
@@ -38,20 +36,19 @@ public class UserService {
 
         UserDocument userDocument = userMongoRepository.findFirstByAccount_EmailAndStatus(
                 userLoginRequest.getEmail(), UserStatus.REGISTERED)
-            .orElseThrow(() -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException.UserNotFoundException(UserErrorCode.USER_NOT_FOUND));
 
         if (BCrypt.checkpw(userLoginRequest.getPassword(), userDocument.getAccount().getPassword())) {
             userDocument.setLastLoginAt(LocalDateTime.now());
-            userMongoRepository.save(userDocument);
-            return userDocument;
+            return userMongoRepository.save(userDocument);
         }
 
-        throw new PasswordMismatchException(UserErrorCode.PASSWORD_MISMATCH);
+        throw new UserException.PasswordMismatchException(UserErrorCode.PASSWORD_MISMATCH);
     }
 
     public UserDocument getUserWithThrow(String userId) {
         return userMongoRepository.findFirstByIdAndStatus(userId, UserStatus.REGISTERED)
-            .orElseThrow(() -> new UserNotFoundException(UserErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException.UserNotFoundException(UserErrorCode.USER_NOT_FOUND));
     }
 
 }

@@ -1,7 +1,7 @@
 package api.domain.report.business;
 
 import api.common.error.FcmTokenErrorCode;
-import api.common.exception.fcm.FcmTokenNotFoundException;
+import api.common.exception.fcm.FcmException;
 import api.domain.fcm.service.FcmTokenService;
 import api.domain.report.controller.model.ReportRequest;
 import api.domain.report.converter.ReportConverter;
@@ -24,7 +24,7 @@ public class ReportBusiness {
         boolean existsFcmToken = fcmTokenService.existsBy(reportRequest.getFcmToken());
 
         if (!existsFcmToken) {
-            throw new FcmTokenNotFoundException(FcmTokenErrorCode.TOKEN_NOT_FOUND);
+            throw new FcmException.FcmTokenNotFoundException(FcmTokenErrorCode.TOKEN_NOT_FOUND);
         }
 
         ReportDocument reportDocument = reportConverter.toDocument(reportRequest);

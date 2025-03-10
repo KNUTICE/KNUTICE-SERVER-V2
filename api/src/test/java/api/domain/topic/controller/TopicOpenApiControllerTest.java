@@ -2,7 +2,7 @@ package api.domain.topic.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import api.common.exception.fcm.FcmTokenNotFoundException;
+import api.common.exception.fcm.FcmException;
 import api.config.AcceptanceTestWithMongo;
 import api.domain.fcm.business.FcmTokenBusiness;
 import api.domain.fcm.controller.model.FcmTokenRequest;
@@ -60,7 +60,7 @@ class TopicOpenApiControllerTest extends AcceptanceTestWithMongo {
         topicSubscriptionRequest.setIsSubscribed(false);
 
         // When & Then
-        assertThrows(FcmTokenNotFoundException.class, () -> topicBusiness.subscribeTopic(topicSubscriptionRequest));
+        assertThrows(FcmException.FcmTokenNotFoundException.class, () -> topicBusiness.subscribeTopic(topicSubscriptionRequest));
     }
 
 

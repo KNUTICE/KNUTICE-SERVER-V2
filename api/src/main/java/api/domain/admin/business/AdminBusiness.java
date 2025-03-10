@@ -1,8 +1,7 @@
 package api.domain.admin.business;
 
 import api.common.error.NoticeErrorCode;
-import api.common.exception.notice.NoticeExistsException;
-import api.common.exception.notice.NoticeNotFoundException;
+import api.common.exception.notice.NoticeException;
 import api.domain.admin.controller.model.request.NoticeSaveRequest;
 import api.domain.admin.controller.model.request.NoticeUpdateRequest;
 import api.domain.admin.controller.model.response.ReportDetailResponse;
@@ -40,7 +39,7 @@ public class AdminBusiness {
         Boolean existsNotice = noticeService.existsNoticeBy(noticeSaveRequest.getNttId());
 
         if (existsNotice) {
-            throw new NoticeExistsException(NoticeErrorCode.NOTICE_ALREADY_EXISTS);
+            throw new NoticeException.NoticeExistsException(NoticeErrorCode.NOTICE_ALREADY_EXISTS);
         }
 
         NoticeDocument noticeDocument = noticeConverter.toDocument(noticeSaveRequest);
@@ -52,8 +51,9 @@ public class AdminBusiness {
         Boolean existsNotice = noticeService.existsNoticeBy(nttId);
 
         if (!existsNotice) {
-            throw new NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
+            throw new NoticeException.NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
         }
+
         adminService.deleteNotice(nttId);
         return true;
     }

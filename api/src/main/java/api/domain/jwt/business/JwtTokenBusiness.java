@@ -2,7 +2,6 @@ package api.domain.jwt.business;
 
 import api.common.error.JwtTokenErrorCode;
 import api.common.exception.jwt.JwtTokenException;
-import api.common.exception.jwt.JwtTokenSignatureException;
 import api.domain.jwt.converter.JwtTokenConverter;
 import api.domain.jwt.model.JwtTokenDto;
 import api.domain.jwt.model.JwtTokenInfo;
@@ -12,9 +11,7 @@ import api.domain.jwt.model.JwtTokenValidationResponse;
 import api.domain.jwt.service.JwtTokenService;
 import db.domain.token.jwt.JwtTokenDocument;
 import db.domain.user.UserDocument;
-import db.domain.user.enums.UserRole;
 import global.annotation.Business;
-import global.errorcode.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,10 +24,6 @@ public class JwtTokenBusiness {
 
     @Transactional
     public JwtTokenResponse issueToken(UserDocument userDocument) {
-
-        if (userDocument == null) {
-            throw new JwtTokenException(ErrorCode.NULL_POINT);
-        }
 
         String userId = userDocument.getId();
 
@@ -57,7 +50,7 @@ public class JwtTokenBusiness {
             String token = refreshToken.substring(7);
             return jwtTokenService.reIssueAccessToken(token);
         }
-        throw new JwtTokenSignatureException(JwtTokenErrorCode.INVALID_TOKEN);
+        throw new JwtTokenException.JwtTokenSignatureException(JwtTokenErrorCode.INVALID_TOKEN);
     }
 
     public JwtTokenValidationResponse tokenValidation(JwtTokenValidationRequest token) {

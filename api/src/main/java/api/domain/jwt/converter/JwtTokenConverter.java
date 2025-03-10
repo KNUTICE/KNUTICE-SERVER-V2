@@ -19,14 +19,6 @@ public class JwtTokenConverter {
     }
 
     public JwtTokenResponse toResponse(JwtTokenDto accessToken, JwtTokenDto refreshToken) {
-
-        Objects.requireNonNull(accessToken, ()->{
-            throw new JwtTokenException(ErrorCode.NULL_POINT);
-        });
-        Objects.requireNonNull(refreshToken, ()->{
-            throw new JwtTokenException(ErrorCode.NULL_POINT);
-        });
-
         return JwtTokenResponse.builder()
             .accessToken(accessToken.getToken())
             .accessTokenExpiredAt(accessToken.getExpiredAt())

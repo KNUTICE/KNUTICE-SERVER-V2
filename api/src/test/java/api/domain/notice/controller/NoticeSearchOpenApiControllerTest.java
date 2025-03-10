@@ -2,7 +2,7 @@ package api.domain.notice.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import api.common.exception.notice.NoticeNotFoundException;
+import api.common.exception.notice.NoticeException;
 import api.config.AcceptanceTestWithMongo;
 import api.domain.notice.business.NoticeSearchBusiness;
 import api.domain.notice.controller.model.noticelist.NoticeResponse;
@@ -51,7 +51,7 @@ class NoticeSearchOpenApiControllerTest extends AcceptanceTestWithMongo {
         noticeSearchRequest.setKeyword("내용 없음");
 
         // When & Then
-        assertThrows(NoticeNotFoundException.class,
+        assertThrows(NoticeException.NoticeNotFoundException.class,
             () -> noticeSearchBusiness.getSearchBy(noticeSearchRequest, Pageable.ofSize(40)));
     }
 
