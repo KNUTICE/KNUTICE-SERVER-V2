@@ -1,7 +1,7 @@
 package api.domain.fcm.service;
 
 import api.common.error.FcmTokenErrorCode;
-import api.common.exception.fcm.FcmTokenNotFoundException;
+import api.common.exception.fcm.FcmException;
 import db.domain.token.fcm.FcmTokenDocument;
 import db.domain.token.fcm.FcmTokenMongoRepository;
 import java.util.Optional;
@@ -25,7 +25,7 @@ public class FcmTokenService {
 
     public FcmTokenDocument getFcmTokenBy(String fcmToken) {
         return fcmTokenMongoRepository.findById(fcmToken)
-            .orElseThrow(() -> new FcmTokenNotFoundException(FcmTokenErrorCode.TOKEN_NOT_FOUND));
+            .orElseThrow(() -> new FcmException.FcmTokenNotFoundException(FcmTokenErrorCode.TOKEN_NOT_FOUND));
 
     }
 

@@ -2,8 +2,6 @@ package api.domain.jwt.helper;
 
 import api.common.error.JwtTokenErrorCode;
 import api.common.exception.jwt.JwtTokenException;
-import api.common.exception.jwt.JwtTokenExpiredException;
-import api.common.exception.jwt.JwtTokenSignatureException;
 import api.domain.jwt.ifs.JwtTokenHelperIfs;
 import api.domain.jwt.model.JwtTokenDto;
 import io.jsonwebtoken.Claims;
@@ -11,7 +9,6 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import java.time.LocalDateTime;
@@ -47,6 +44,13 @@ public class JwtTokenHelper implements JwtTokenHelperIfs {
         return getTokenDto(data, refreshTokenPlusHour);
     }
 
+    /**
+     * 예외 발생을 Exception 최상위 예외를 가장 하위로 보내고, 구체적인 예외를 우선 잡는 방법으로 변경.<br>
+     * instanceof 를 개별 catch 로 변경하여, catch 체이닝 방식을 통해 자동 분기 되도록 수정.<br>
+     * 원인 예외를 같이 넘겨 디버깅시 스택 트레이스 확인.<br>
+     * Author:itstime0809
+     */
+
     @Override
     public Map<String, Object> validationTokenWithThrow(String token) {
         SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
@@ -55,14 +59,15 @@ public class JwtTokenHelper implements JwtTokenHelperIfs {
         try {
             Jws<Claims> result = parser.parseSignedClaims(token);
             return new HashMap<>(result.getPayload());
+        } catch (SignatureException e) {
+            // 토큰의 서명이 유효하지 않을 때
+            throw new JwtTokenException.JwtTokenSignatureException(JwtTokenErrorCode.INVALID_TOKEN, e);
+        } catch (ExpiredJwtException e) {
+            // 토큰이 만료되었을 때
+            throw new JwtTokenException.JwtTokenExpiredException(JwtTokenErrorCode.EXPIRED_TOKEN, e);
         } catch (Exception e) {
-            if (e instanceof SignatureException) { // 토큰이 유효하지 않을 때
-                throw new JwtTokenSignatureException(JwtTokenErrorCode.INVALID_TOKEN);
-            } else if (e instanceof ExpiredJwtException) { // 토큰 만료
-                throw new JwtTokenExpiredException(JwtTokenErrorCode.EXPIRED_TOKEN);
-            } else { // 그 외
-                throw new JwtTokenException(JwtTokenErrorCode.TOKEN_EXCEPTION);
-            }
+            // 그 외의 예외 처리
+            throw new JwtTokenException.JwtUnknownException(JwtTokenErrorCode.TOKEN_EXCEPTION, e);
         }
     }
 

@@ -39,12 +39,12 @@ public class JwtTokenService {
         JwtTokenInfo jwtTokenInfo = validationToken(refreshToken);
 
         JwtTokenDocument jwtTokenDocument = jwtTokenMongoRepository.findById(jwtTokenInfo.getUserId())
-            .orElseThrow(() -> new JwtTokenException(JwtTokenErrorCode.INVALID_TOKEN));
+            .orElseThrow(() -> new JwtTokenException.JwtTokenDocumentException(JwtTokenErrorCode.INVALID_TOKEN));
 
         String storedRefreshToken = jwtTokenDocument.getRefreshToken();
 
         if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
-            throw new JwtTokenException(JwtTokenErrorCode.INVALID_TOKEN);
+            throw new JwtTokenException.JwtTokenInvalidException(JwtTokenErrorCode.INVALID_TOKEN);
         }
         return issueRefreshToken(JwtTokenInfo.builder()
             .userId(jwtTokenDocument.getUserId())
@@ -58,8 +58,13 @@ public class JwtTokenService {
         Object userId = userData.get("userId");
         Object userRole = userData.get("role");
 
+        /**
+         * userId, userRole 모두 토큰 생성시에 클레임에 포함시키는 값이므로
+         * 토큰 생성시에 본 키 값이 변경된다면, get()이 null 을 발생시킬 수 있음.
+         * 따라서, 그에 대한 방어 코드.
+         */
         if (userId == null || userRole == null) {
-            throw new JwtTokenException(ErrorCode.NULL_POINT);
+            throw new JwtTokenException.JwtTokenMissingClaimException(ErrorCode.NULL_POINT);
         }
 
         return JwtTokenInfo.builder()

@@ -2,7 +2,7 @@ package api.domain.notice.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import api.common.exception.notice.NoticeNotFoundException;
+import api.common.exception.notice.NoticeException;
 import api.config.AcceptanceTestWithMongo;
 import api.domain.notice.business.NoticeBusiness;
 import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
@@ -72,7 +72,7 @@ class NoticeOpenApiControllerTest extends AcceptanceTestWithMongo {
     void 단일_공지_조회_실패() {
 
         // When & Then
-        assertThrows(NoticeNotFoundException.class, () -> noticeBusiness.getNoticeBy(100L));
+        assertThrows(NoticeException.NoticeNotFoundException.class, () -> noticeBusiness.getNoticeBy(100L));
     }
 
     @Test
