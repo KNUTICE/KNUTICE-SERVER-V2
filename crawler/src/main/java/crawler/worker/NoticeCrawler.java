@@ -84,8 +84,7 @@ public class NoticeCrawler implements SchedulingOperation {
 
     @Override
     @Transactional
-    @Scheduled(cron = "0 */15 8-20 * * MON-FRI") // 월요일부터 금요일까지 8시부터 20시까지 15분마다 실행
-//    @Scheduled(fixedDelay = 1000*60)
+    @Scheduled(cron = "0 */15 * * * *") // 24시간 15분 간격 실행 - 2025.03.26 수정
     public void scheduling() {
         try {
             doCrawling();
