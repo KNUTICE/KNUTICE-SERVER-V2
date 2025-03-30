@@ -35,4 +35,10 @@ public class FcmTokenDocument {
     @Builder.Default
     private int failedCount = 0;
 
+    @Builder.Default
+    private Boolean apnsEnabled = false; // iOS 체크
+
+    @Builder.Default
+    private int badgeCount = 0;
+
 }
