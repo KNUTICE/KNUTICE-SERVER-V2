@@ -26,6 +26,9 @@ public class FeignController {
             boolean apnsEnabled = (fcmTokenDocument.getApnsEnabled() != null) ? fcmTokenDocument.getApnsEnabled() : false;
             int badgeCount = apnsEnabled ? fcmTokenDocument.getBadgeCount() + 1 : fcmTokenDocument.getBadgeCount();
 
+            fcmTokenDocument.setBadgeCount(badgeCount);
+            fcmTokenMongoRepository.save(fcmTokenDocument);
+
             // FcmTokenDetail 생성 후 batchSend 호출
             fcmService.batchSend(fcmDto, List.of(
                 new FcmTokenDetail(fcmToken, apnsEnabled, badgeCount)
