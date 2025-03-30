@@ -5,6 +5,7 @@ import crawler.fcmutils.FcmMessageFilter;
 import crawler.fcmutils.FcmTokenManager;
 import crawler.fcmutils.FcmDtoBuilder;
 import crawler.fcmutils.FcmMessageGenerator;
+import crawler.fcmutils.dto.FcmTokenDetail;
 import crawler.fcmutils.dto.FilteredFcmResult;
 import crawler.fcmutils.dto.MessageWithFcmToken;
 import crawler.fcmutils.RetryableErrorCode;
@@ -47,22 +48,34 @@ public class FcmService {
         throws FirebaseMessagingException {
         List<FcmTokenDocument> fcmTokenDocumentList = fcmTokenManager.getActivateTopicListBy(fcmDto.getNoticeName());
 
-        List<String> deviceTokenList = fcmTokenDocumentList.stream()
-            .map(FcmTokenDocument::getFcmToken)
+        List<FcmTokenDetail> tokenDetailList = fcmTokenDocumentList.stream()
+            .map(document -> {
+                // apnsEnabled 가 true 일 때만, null 일 경우 false 처리
+                boolean apnsEnabled = (document.getApnsEnabled() != null) ? document.getApnsEnabled() : false;
+
+                // APNS 의 경우에만 badgeCount 증가
+                int badgeCount = apnsEnabled ? document.getBadgeCount() + 1 : document.getBadgeCount();
+
+                return new FcmTokenDetail(
+                    document.getFcmToken(),
+                    apnsEnabled,
+                    badgeCount
+                );
+            })
             .toList();
 
-        batchSend(fcmDto, deviceTokenList);
+        batchSend(fcmDto, tokenDetailList);
     }
 
-    public void batchSend(FcmDto fcmDto, List<String> deviceTokenList) {
+    public void batchSend(FcmDto fcmDto, List<FcmTokenDetail> tokenDetailList) {
 
-        if (deviceTokenList.isEmpty()) {
+        if (tokenDetailList.isEmpty()) {
             log.warn("해당 주제를 구독한 사용자가 없습니다.");
             return;
         }
 
         List<MessageWithFcmToken> messageWithTokenList = fcmMessageGenerator.generateMessageBuilderList(
-            fcmDto, deviceTokenList);
+            fcmDto, tokenDetailList);
 
         int tokenSize = (int) Math.ceil((double) messageWithTokenList.size() / 500);
 
