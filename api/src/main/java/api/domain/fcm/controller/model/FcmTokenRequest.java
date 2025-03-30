@@ -13,4 +13,6 @@ public class FcmTokenRequest {
     @NotBlank
     private String fcmToken;
 
+    private Boolean apnsEnabled; // iOS 체크
+
 }

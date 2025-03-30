@@ -30,6 +30,7 @@ public class FcmTokenBusiness {
             FcmTokenDocument existsFcmTokenDocument = fcmTokenDocument.get();
             existsFcmTokenDocument.setRegisteredAt(LocalDateTime.now());
             existsFcmTokenDocument.setFailedCount(0);
+            existsFcmTokenDocument.setBadgeCount(0); // iOS 배지 카운트
             return fcmTokenService.saveFcmToken(existsFcmTokenDocument);
         }else { // @Builder.Default 를 지정했기 때문에, set() 할 필요 없음
             FcmTokenDocument newFcmTokenDocument = fcmTokenConverter.toDocument(fcmTokenRequest);
