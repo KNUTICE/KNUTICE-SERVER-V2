@@ -1,6 +1,5 @@
 package crawler.fcmutils;
 
-import crawler.fcmutils.dto.FcmTokenDetail;
 import crawler.fcmutils.dto.MessageWithFcmToken;
 import crawler.fcmutils.messagefactory.MessageFactory;
 import crawler.service.model.FcmDto;
@@ -17,10 +16,10 @@ public class FcmMessageGenerator {
 
     public List<MessageWithFcmToken> generateMessageBuilderList(
         FcmDto fcmDto,
-        List<FcmTokenDetail> tokenDetailList
+        List<String> fcmTokenList
     ) {
-        return tokenDetailList.stream()
-            .map(tokenDetail -> new MessageWithFcmToken(messageFactory.createMessage(fcmDto, tokenDetail), tokenDetail.getFcmToken()))
+        return fcmTokenList.stream()
+            .map(token -> new MessageWithFcmToken(messageFactory.createMessage(fcmDto, token), token))
             .collect(Collectors.toList());
     }
 

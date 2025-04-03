@@ -5,14 +5,12 @@ import crawler.fcmutils.FcmMessageFilter;
 import crawler.fcmutils.FcmTokenManager;
 import crawler.fcmutils.FcmDtoBuilder;
 import crawler.fcmutils.FcmMessageGenerator;
-import crawler.fcmutils.dto.FcmTokenDetail;
 import crawler.fcmutils.dto.FilteredFcmResult;
 import crawler.fcmutils.dto.MessageWithFcmToken;
 import crawler.fcmutils.RetryableErrorCode;
 import crawler.service.model.FcmDto;
 import crawler.worker.model.NoticeDto;
 import db.domain.token.fcm.FcmTokenDocument;
-import db.domain.token.fcm.FcmTokenMongoRepository;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +29,6 @@ public class FcmService {
     private final FcmMessageGenerator fcmMessageGenerator;
     private final FcmTokenManager fcmTokenManager;
     private final FcmDtoBuilder fcmDtoBuilder;
-    private final FcmTokenMongoRepository fcmTokenMongoRepository;
 
 
     // CONSTANT
@@ -50,37 +47,22 @@ public class FcmService {
         throws FirebaseMessagingException {
         List<FcmTokenDocument> fcmTokenDocumentList = fcmTokenManager.getActivateTopicListBy(fcmDto.getNoticeName());
 
-        List<FcmTokenDetail> tokenDetailList = fcmTokenDocumentList.stream()
-            .map(document -> {
-                // apnsEnabled 가 true 일 때만, null 일 경우 false 처리
-                boolean apnsEnabled = (document.getApnsEnabled() != null) ? document.getApnsEnabled() : false;
-
-                // APNS 의 경우에만 badgeCount 증가
-                int badgeCount = apnsEnabled ? document.getBadgeCount() + 1 : document.getBadgeCount();
-
-                document.setBadgeCount(badgeCount);
-                fcmTokenMongoRepository.save(document);  // DB에 저장
-
-                return new FcmTokenDetail(
-                    document.getFcmToken(),
-                    apnsEnabled,
-                    badgeCount
-                );
-            })
+        List<String> deviceTokenList = fcmTokenDocumentList.stream()
+            .map(FcmTokenDocument::getFcmToken)
             .toList();
 
-        batchSend(fcmDto, tokenDetailList);
+        batchSend(fcmDto, deviceTokenList);
     }
 
-    public void batchSend(FcmDto fcmDto, List<FcmTokenDetail> tokenDetailList) {
+    public void batchSend(FcmDto fcmDto, List<String> deviceTokenList) {
 
-        if (tokenDetailList.isEmpty()) {
+        if (deviceTokenList.isEmpty()) {
             log.warn("해당 주제를 구독한 사용자가 없습니다.");
             return;
         }
 
         List<MessageWithFcmToken> messageWithTokenList = fcmMessageGenerator.generateMessageBuilderList(
-            fcmDto, tokenDetailList);
+            fcmDto, deviceTokenList);
 
         int tokenSize = (int) Math.ceil((double) messageWithTokenList.size() / 500);
 
