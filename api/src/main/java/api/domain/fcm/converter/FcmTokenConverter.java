@@ -13,7 +13,6 @@ public class FcmTokenConverter {
     public FcmTokenDocument toDocument(FcmTokenRequest fcmTokenRequest) {
         return FcmTokenDocument.builder()
             .fcmToken(fcmTokenRequest.getFcmToken())
-            .apnsEnabled(fcmTokenRequest.getApnsEnabled())
             .registeredAt(LocalDateTime.now())
             .build();
     }
