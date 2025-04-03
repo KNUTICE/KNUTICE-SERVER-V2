@@ -12,7 +12,6 @@ import crawler.fcmutils.RetryableErrorCode;
 import crawler.service.model.FcmDto;
 import crawler.worker.model.NoticeDto;
 import db.domain.token.fcm.FcmTokenDocument;
-import db.domain.token.fcm.FcmTokenMongoRepository;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +30,6 @@ public class FcmService {
     private final FcmMessageGenerator fcmMessageGenerator;
     private final FcmTokenManager fcmTokenManager;
     private final FcmDtoBuilder fcmDtoBuilder;
-    private final FcmTokenMongoRepository fcmTokenMongoRepository;
 
 
     // CONSTANT
@@ -57,9 +55,6 @@ public class FcmService {
 
                 // APNS 의 경우에만 badgeCount 증가
                 int badgeCount = apnsEnabled ? document.getBadgeCount() + 1 : document.getBadgeCount();
-
-                document.setBadgeCount(badgeCount);
-                fcmTokenMongoRepository.save(document);  // DB에 저장
 
                 return new FcmTokenDetail(
                     document.getFcmToken(),
