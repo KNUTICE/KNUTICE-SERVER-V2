@@ -18,6 +18,8 @@ public class FcmTokenInfoList {
 
     private boolean academicNewsTopic;
 
+    private boolean employmentNewsTopic;
+
     private LocalDateTime registeredAt;
 
     private int failedCount;
