@@ -17,6 +17,6 @@ public class LatestThreeNoticeResponse {
     private List<NoticeResponse> latestThreeScholarshipNews;
     private List<NoticeResponse> latestThreeEventNews;
     private List<NoticeResponse> latestThreeAcademicNews;
-    private List<NoticeResponse> latestEmploymentNews;
+    private List<NoticeResponse> latestThreeEmploymentNews;
 
 }
