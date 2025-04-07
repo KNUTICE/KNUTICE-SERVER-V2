@@ -3,6 +3,7 @@ package db.domain.token.fcm;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -29,6 +30,9 @@ public class FcmTokenDocument {
 
     @Builder.Default
     private boolean academicNewsTopic = true;
+
+    @Builder.Default
+    private boolean employmentNewsTopic = true;
 
     private LocalDateTime registeredAt;
 

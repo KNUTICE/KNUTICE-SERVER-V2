@@ -24,6 +24,7 @@ public class FcmTokenConverter {
             .scholarshipNewsTopic(fcmTokenDocument.isScholarshipNewsTopic())
             .eventNewsTopic(fcmTokenDocument.isEventNewsTopic())
             .academicNewsTopic(fcmTokenDocument.isAcademicNewsTopic())
+            .employmentNewsTopic(fcmTokenDocument.isEmploymentNewsTopic())
             .registeredAt(fcmTokenDocument.getRegisteredAt())
             .failedCount(fcmTokenDocument.getFailedCount())
             .build();
