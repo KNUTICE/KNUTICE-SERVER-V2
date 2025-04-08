@@ -57,7 +57,7 @@ public class NoticeConverter {
             .latestThreeScholarshipNews(toLatestThreeNoticeDto(scholarshipNews))
             .latestThreeEventNews(toLatestThreeNoticeDto(eventNews))
             .latestThreeAcademicNews(toLatestThreeNoticeDto(academicNews))
-            .latestEmploymentNews(toLatestThreeNoticeDto(employmentNews))
+            .latestThreeEmploymentNews(toLatestThreeNoticeDto(employmentNews))
             .build();
     }
 
