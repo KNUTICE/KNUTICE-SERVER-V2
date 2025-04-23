@@ -29,7 +29,15 @@ public enum NoticeMapper {
         "https://www.ut.ac.kr/cop/bbs/BBSMSTR_000000000055/selectBoardList.do",
         "https://www.ut.ac.kr/cop/bbs/BBSMSTR_000000000055/selectBoardArticle.do?bbsId=BBSMSTR_000000000055",
         "학사공지사항"
-    );
+    ),
+
+    EMPLOYMENT_NEWS(
+        "https://www.ut.ac.kr/cop/bbs/BBSMSTR_000000000179/selectBoardList.do",
+        "https://www.ut.ac.kr/cop/bbs/BBSMSTR_000000000179/selectBoardArticle.do?bbsId=BBSMSTR_000000000179",
+        "취업지원안내"
+    )
+
+    ;
 
     private final String noticeUrl;
     private final String internalContentUrl;

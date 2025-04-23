@@ -11,5 +11,6 @@ public interface FcmTokenMongoRepository extends MongoRepository<FcmTokenDocumen
     List<FcmTokenDocument> findAllByEventNewsTopicTrue();
     List<FcmTokenDocument> findAllByScholarshipNewsTopicTrue();
     List<FcmTokenDocument> findAllByAcademicNewsTopicTrue();
+    List<FcmTokenDocument> findAllByEmploymentNewsTopicTrue();
 
 }

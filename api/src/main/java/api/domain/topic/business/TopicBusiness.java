@@ -44,6 +44,9 @@ public class TopicBusiness {
             case ACADEMIC_NEWS:
                 fcmTokenDocument.setAcademicNewsTopic(topicSubscriptionRequest.getIsSubscribed());
                 break;
+            case EMPLOYMENT_NEWS:
+                fcmTokenDocument.setEmploymentNewsTopic(topicSubscriptionRequest.getIsSubscribed());
+                break;
             default:
                 throw new TopicNotFoundException(TopicErrorCode.TOPIC_NOT_FOUND);
         }

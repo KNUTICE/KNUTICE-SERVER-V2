@@ -49,13 +49,15 @@ public class NoticeConverter {
         List<NoticeDocument> generalNews,
         List<NoticeDocument> scholarshipNews,
         List<NoticeDocument> eventNews,
-        List<NoticeDocument> academicNews
+        List<NoticeDocument> academicNews,
+        List<NoticeDocument> employmentNews
     ) {
         return LatestThreeNoticeResponse.builder()
             .latestThreeGeneralNews(toLatestThreeNoticeDto(generalNews))
             .latestThreeScholarshipNews(toLatestThreeNoticeDto(scholarshipNews))
             .latestThreeEventNews(toLatestThreeNoticeDto(eventNews))
             .latestThreeAcademicNews(toLatestThreeNoticeDto(academicNews))
+            .latestThreeEmploymentNews(toLatestThreeNoticeDto(employmentNews))
             .build();
     }
 
