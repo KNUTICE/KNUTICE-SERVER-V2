@@ -1,0 +1,39 @@
+server:
+  port: ${API_PORT}
+
+spring:
+  application:
+    name: knutice-api
+
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+      database: ${MONGO_DATABASE}
+
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}
+  access-token:
+    plus-hour: ${JWT_ACCESS_PLUS_HOUR}
+  refresh-token:
+    plus-hour: ${JWT_REFRESH_PLUS_HOUR}
+
+logging:
+  level:
+    org:
+      springframework.web: DEBUG
+      hibernate: INFO
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+crawler:
+  server:
+    address: ${CRAWLER_SERVER_ADDRESS}

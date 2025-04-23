@@ -1,5 +1,11 @@
-# Ignore application.yml
-application.yml
+# Ignore .log
+*.log
+
+# Ignore Firebase service key
+firebase_service_key.json
+
+# Ignore .env
+*.env
 
 HELP.md
 .gradle
@@ -38,3 +44,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Ignore .DS_Store meta data file for max os x ###
+.DS_Store
+.DS_Store/

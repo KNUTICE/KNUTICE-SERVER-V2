@@ -13,6 +13,8 @@ repositories {
 
 dependencies {
 
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
     // Firebase
     implementation group: 'com.google.firebase', name: 'firebase-admin', version: '9.3.0'
 
@@ -38,8 +40,12 @@ dependencies {
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+    // Prometheus
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation project(":db")
     implementation project(":global")
