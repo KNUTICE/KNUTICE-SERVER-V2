@@ -15,7 +15,7 @@ public class UrgentNoticeExceptionHandler {
 
     @ExceptionHandler(value = UrgentNoticeNotFoundException.class)
     public ResponseEntity<Api<ErrorCodeIfs>> notFoundUrgentNotice(UrgentNoticeNotFoundException e) {
-        log.error("", e);
+//        log.error("", e);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(Api.ERROR(UrgentNoticeErrorCode.URGENT_NOTICE_NOT_FOUND));
     }

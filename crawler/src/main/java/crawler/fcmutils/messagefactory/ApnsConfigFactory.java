@@ -9,6 +9,7 @@ public class ApnsConfigFactory {
 
     public static ApnsConfig createApnsConfig(FcmDto fcmDto) {
         return ApnsConfig.builder()
+            .putHeader("apns-priority", "10")
             .setAps(Aps.builder()
                 .setMutableContent(true)
                 .setAlert(ApsAlert.builder()
