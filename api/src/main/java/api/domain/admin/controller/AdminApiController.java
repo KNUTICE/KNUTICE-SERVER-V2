@@ -1,5 +1,7 @@
 package api.domain.admin.controller;
 
+import api.common.feign.CrawlerClient;
+import api.common.feign.request.FcmRequest;
 import api.domain.admin.business.AdminBusiness;
 import api.domain.admin.controller.model.request.NoticeSaveRequest;
 import api.domain.admin.controller.model.request.NoticeUpdateRequest;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminApiController {
 
     private final AdminBusiness adminBusiness;
+
+    private final CrawlerClient crawlerClient;
 
     @PostMapping()
     public Api<Boolean> saveNotice(
@@ -77,6 +81,12 @@ public class AdminApiController {
     public Api<List<FcmTokenInfoList>> getFcmTokenList() {
         List<FcmTokenInfoList> responseList = adminBusiness.getFcmTokenList();
         return Api.OK(responseList);
+    }
+
+    @PostMapping("/message")
+    public Api<Boolean> sendMessage(@RequestBody @Valid Api<FcmRequest> request) {
+        crawlerClient.sendMessage(request.getBody().getFcmToken(), request.getBody());
+        return Api.OK(true);
     }
 
 }

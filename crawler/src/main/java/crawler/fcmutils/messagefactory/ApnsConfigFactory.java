@@ -10,6 +10,7 @@ public class ApnsConfigFactory {
     public static ApnsConfig createApnsConfig(FcmDto fcmDto) {
         return ApnsConfig.builder()
             .setAps(Aps.builder()
+                .setMutableContent(true)
                 .setAlert(ApsAlert.builder()
                     .setLaunchImage(fcmDto.getContentImage())
                     .build())
