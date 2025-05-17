@@ -61,6 +61,7 @@ public class FcmTokenManager {
             case SCHOLARSHIP_NEWS -> fcmTokenMongoRepository.findAllByScholarshipNewsTopicTrue();
             case EVENT_NEWS -> fcmTokenMongoRepository.findAllByEventNewsTopicTrue();
             case ACADEMIC_NEWS -> fcmTokenMongoRepository.findAllByAcademicNewsTopicTrue();
+            case EMPLOYMENT_NEWS -> fcmTokenMongoRepository.findAllByEmploymentNewsTopicTrue();
         };
     }
 

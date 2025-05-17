@@ -40,8 +40,10 @@ public class NoticeBusiness {
             NoticeMapper.EVENT_NEWS);
         List<NoticeDocument> academicNews = noticeService.getLatestThreeNoticeBy(
             NoticeMapper.ACADEMIC_NEWS);
+        List<NoticeDocument> employmentNews = noticeService.getLatestThreeNoticeBy(
+            NoticeMapper.EMPLOYMENT_NEWS);
 
-        return noticeConverter.toResponse(generalNews, scholarshipNews, eventNews, academicNews);
+        return noticeConverter.toResponse(generalNews, scholarshipNews, eventNews, academicNews, employmentNews);
     }
 
     public NoticeResponse getNoticeBy(Long nttId) {

@@ -125,6 +125,7 @@ public class NoticeCrawler implements SchedulingOperation {
                                 NoticeMapper.SCHOLARSHIP_NEWS,
                                 NoticeMapper.EVENT_NEWS,
                                 NoticeMapper.ACADEMIC_NEWS
+//                                NoticeMapper.EMPLOYMENT_NEWS
                         )
                         .parallel()
                         .map(noticeMapper -> {
