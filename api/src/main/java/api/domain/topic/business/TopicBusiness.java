@@ -3,7 +3,9 @@ package api.domain.topic.business;
 import api.common.error.TopicErrorCode;
 import api.common.exception.topic.TopicNotFoundException;
 import api.domain.fcm.service.FcmTokenService;
+import api.domain.topic.controller.model.TopicStatusResponse;
 import api.domain.topic.controller.model.TopicSubscriptionRequest;
+import api.domain.topic.converter.TopicConverter;
 import db.domain.token.fcm.FcmTokenDocument;
 import global.annotation.Business;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TopicBusiness {
 
     private final FcmTokenService fcmTokenService;
+    private final TopicConverter topicConverter;
 
     public Boolean subscribeTopic(TopicSubscriptionRequest topicSubscriptionRequest) {
 
@@ -28,6 +31,10 @@ public class TopicBusiness {
         log.info("변경된 구독 상태 : [ {} : {} ]", topicSubscriptionRequest.getNoticeName(), topicSubscriptionRequest.getIsSubscribed());
 
         return true;
+    }
+
+    public TopicStatusResponse getTopicStatusBy(String fcmToken) {
+        return topicConverter.toResponse(fcmTokenService.getFcmTokenBy(fcmToken));
     }
 
     private static void setTopic(TopicSubscriptionRequest topicSubscriptionRequest, FcmTokenDocument fcmTokenDocument) {
