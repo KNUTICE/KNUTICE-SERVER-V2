@@ -1,52 +1,67 @@
 package api.domain.topic.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import api.common.interceptor.AuthorizationInterceptor;
+import api.common.exception.fcm.FcmTokenNotFoundException;
+import api.config.AcceptanceTestWithMongo;
+import api.domain.fcm.business.FcmTokenBusiness;
+import api.domain.fcm.controller.model.FcmTokenRequest;
+import api.domain.fcm.service.FcmTokenService;
 import api.domain.topic.business.TopicBusiness;
 import api.domain.topic.controller.model.TopicSubscriptionRequest;
-import global.api.Api;
+import db.domain.token.fcm.FcmTokenDocument;
 import global.utils.NoticeMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 
-@WebMvcTest(TopicOpenApiController.class)
-class TopicOpenApiControllerTest {
+@SpringBootTest
+class TopicOpenApiControllerTest extends AcceptanceTestWithMongo {
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
     private TopicBusiness topicBusiness;
 
-    @MockitoBean
-    private AuthorizationInterceptor authorizationInterceptor;
+    @Autowired
+    private FcmTokenBusiness fcmTokenBusiness;
+
+    @Autowired
+    private FcmTokenService fcmTokenService;
 
     @Test
-    void manageTopic() throws Exception {
-        // given
-        String requestJson = """
-                {
-                    "body": {
-                        "fcmToken": "fcmToken123",
-                        "noticeName": "GENERAL_NEWS",
-                        "isSubscribed": false
-                    }
-                }
-            """;
+    void 주제_구독_변경_성공() {
 
-        mockMvc.perform(post("/open-api/topic")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson))
-            .andExpect(status().isOk());
+        // Given
+        FcmTokenRequest fcmTokenRequest = new FcmTokenRequest();
+        fcmTokenRequest.setFcmToken("my_test_token");
+        fcmTokenBusiness.saveFcmToken(fcmTokenRequest);
 
-        verify(topicBusiness).subscribeTopic(any(TopicSubscriptionRequest.class));
+        TopicSubscriptionRequest topicSubscriptionRequest = new TopicSubscriptionRequest();
+        topicSubscriptionRequest.setFcmToken("my_test_token");
+        topicSubscriptionRequest.setNoticeName(NoticeMapper.GENERAL_NEWS);
+        topicSubscriptionRequest.setIsSubscribed(false);
+
+        // When
+        Boolean isRegistered = topicBusiness.subscribeTopic(topicSubscriptionRequest);
+
+        // Then
+        FcmTokenDocument fcmTokenDocument = fcmTokenService.getFcmTokenBy(fcmTokenRequest.getFcmToken());
+
+        assertEquals(topicSubscriptionRequest.getIsSubscribed(),fcmTokenDocument.isGeneralNewsTopic());
+        assertTrue(isRegistered);
     }
+
+    @Test
+    void 주제_구독_변경_실패() {
+
+        // Given
+        TopicSubscriptionRequest topicSubscriptionRequest = new TopicSubscriptionRequest();
+        topicSubscriptionRequest.setFcmToken("my_test_tokene");
+        topicSubscriptionRequest.setNoticeName(NoticeMapper.GENERAL_NEWS);
+        topicSubscriptionRequest.setIsSubscribed(false);
+
+        // When & Then
+        assertThrows(FcmTokenNotFoundException.class, () -> topicBusiness.subscribeTopic(topicSubscriptionRequest));
+    }
+
 
 }

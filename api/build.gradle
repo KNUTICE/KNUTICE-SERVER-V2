@@ -46,7 +46,7 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
     // In-Memory Mongo
-//    testImplementation 'de.bwaldvogel:mongo-java-server:1.46.0'
+    testImplementation 'de.bwaldvogel:mongo-java-server:1.46.0'
 
     // OpenFeign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
