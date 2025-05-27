@@ -1,43 +1,41 @@
 package api.domain.fcm.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.*;
 
-import api.common.interceptor.AuthorizationInterceptor;
+import api.config.AcceptanceTestWithMongo;
 import api.domain.fcm.business.FcmTokenBusiness;
+import api.domain.fcm.controller.model.FcmTokenRequest;
+import api.domain.fcm.service.FcmTokenService;
+import db.domain.token.fcm.FcmTokenDocument;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 
-@WebMvcTest(FcmTokenOpenApiController.class)
-class FcmTokenOpenApiControllerTest {
+@SpringBootTest
+class FcmTokenOpenApiControllerTest extends AcceptanceTestWithMongo {
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
     private FcmTokenBusiness fcmTokenBusiness;
 
-    @MockitoBean
-    private AuthorizationInterceptor authorizationInterceptor;
+    @Autowired
+    private FcmTokenService fcmTokenService;
 
     @Test
-    void 토큰_저장() throws Exception {
-        String requestJson = """
-                {
-                    "body": {
-                        "fcmToken": "fcmToken123"
-                    }
-                }
-            """;
+    void 토큰_저장_성공() {
 
-        mockMvc.perform(post("/open-api/fcm")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestJson)
-        ).andExpect(status().isOk());
+        // Given
+        FcmTokenRequest fcmTokenRequest = new FcmTokenRequest();
+        fcmTokenRequest.setFcmToken("my_test_token");
+
+        // When
+        Boolean isRegistered = fcmTokenBusiness.saveFcmToken(fcmTokenRequest);
+
+        // Then
+        FcmTokenDocument fcmTokenDocument = fcmTokenService.getFcmTokenBy(fcmTokenRequest.getFcmToken());
+
+        assertEquals(fcmTokenRequest.getFcmToken(), fcmTokenDocument.getFcmToken());
+        assertTrue(isRegistered);
+
     }
 
 }

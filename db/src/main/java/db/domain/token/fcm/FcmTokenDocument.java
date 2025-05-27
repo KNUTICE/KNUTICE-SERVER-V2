@@ -32,7 +32,7 @@ public class FcmTokenDocument {
     private boolean academicNewsTopic = true;
 
     @Builder.Default
-    private boolean employmentNewsTopic = false;
+    private boolean employmentNewsTopic = true;
 
     private LocalDateTime registeredAt;
 

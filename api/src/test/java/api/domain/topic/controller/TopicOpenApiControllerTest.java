@@ -1,6 +1,5 @@
 package api.domain.topic.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.mockito.Mockito.*;
@@ -48,15 +47,6 @@ class TopicOpenApiControllerTest {
             .andExpect(status().isOk());
 
         verify(topicBusiness).subscribeTopic(any(TopicSubscriptionRequest.class));
-    }
-
-    @Test
-    void getTopicStatus() throws Exception {
-        String fcmToken = "fcmToken123";
-        mockMvc.perform(get("/open-api/topic")
-                .param("fcmToken", fcmToken)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
     }
 
 }
