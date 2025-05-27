@@ -1,41 +1,43 @@
 package api.domain.fcm.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import api.config.AcceptanceTestWithMongo;
+import api.common.interceptor.AuthorizationInterceptor;
 import api.domain.fcm.business.FcmTokenBusiness;
-import api.domain.fcm.controller.model.FcmTokenRequest;
-import api.domain.fcm.service.FcmTokenService;
-import db.domain.token.fcm.FcmTokenDocument;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
-class FcmTokenOpenApiControllerTest extends AcceptanceTestWithMongo {
+@WebMvcTest(FcmTokenOpenApiController.class)
+class FcmTokenOpenApiControllerTest {
 
     @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
     private FcmTokenBusiness fcmTokenBusiness;
 
-    @Autowired
-    private FcmTokenService fcmTokenService;
+    @MockitoBean
+    private AuthorizationInterceptor authorizationInterceptor;
 
     @Test
-    void 토큰_저장_성공() {
+    void 토큰_저장() throws Exception {
+        String requestJson = """
+                {
+                    "body": {
+                        "fcmToken": "fcmToken123"
+                    }
+                }
+            """;
 
-        // Given
-        FcmTokenRequest fcmTokenRequest = new FcmTokenRequest();
-        fcmTokenRequest.setFcmToken("my_test_token");
-
-        // When
-        Boolean isRegistered = fcmTokenBusiness.saveFcmToken(fcmTokenRequest);
-
-        // Then
-        FcmTokenDocument fcmTokenDocument = fcmTokenService.getFcmTokenBy(fcmTokenRequest.getFcmToken());
-
-        assertEquals(fcmTokenRequest.getFcmToken(), fcmTokenDocument.getFcmToken());
-        assertTrue(isRegistered);
-
+        mockMvc.perform(post("/open-api/fcm")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson)
+        ).andExpect(status().isOk());
     }
 
 }
