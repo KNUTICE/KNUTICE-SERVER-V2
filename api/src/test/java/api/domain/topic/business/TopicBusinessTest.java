@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import api.domain.fcm.service.FcmTokenService;
+import api.domain.topic.controller.model.TopicStatusResponse;
 import api.domain.topic.controller.model.TopicSubscriptionRequest;
+import api.domain.topic.converter.TopicConverter;
 import db.domain.token.fcm.FcmTokenDocument;
 import global.utils.NoticeMapper;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,9 @@ class TopicBusinessTest {
 
     @Mock
     private FcmTokenService fcmTokenService;
+
+    @Mock
+    private TopicConverter topicConverter;
 
     @InjectMocks
     private TopicBusiness topicBusiness;
@@ -53,6 +58,36 @@ class TopicBusinessTest {
         verify(fcmTokenService).getFcmTokenBy(fcmToken);
         verify(fcmTokenService).saveFcmToken(fcmTokenDocument);
         verifyNoMoreInteractions(fcmTokenService);
+    }
+
+    @Test
+    void getTopicStatusBy() {
+        // Given
+        String fcmToken = "fcmToken123";
+        FcmTokenDocument fcmTokenDocument = FcmTokenDocument.builder()
+            .fcmToken(fcmToken)
+            .build();
+
+        TopicStatusResponse topicStatusResponse = TopicStatusResponse.builder()
+            .generalNewsTopic(true)
+            .scholarshipNewsTopic(true)
+            .eventNewsTopic(true)
+            .academicNewsTopic(false)
+            .employmentNewsTopic(false)
+            .build();
+
+        when(fcmTokenService.getFcmTokenBy(fcmToken)).thenReturn(fcmTokenDocument);
+        when(topicConverter.toResponse(fcmTokenDocument)).thenReturn(topicStatusResponse);
+
+        // When
+        TopicStatusResponse result = topicBusiness.getTopicStatusBy(fcmToken);
+
+        // Then
+        assertThat(result.isGeneralNewsTopic()).isTrue();
+        assertThat(result.isScholarshipNewsTopic()).isTrue();
+        assertThat(result.isEventNewsTopic()).isTrue();
+        assertThat(result.isAcademicNewsTopic()).isFalse();
+        assertThat(result.isEmploymentNewsTopic()).isFalse();
     }
 
 }
