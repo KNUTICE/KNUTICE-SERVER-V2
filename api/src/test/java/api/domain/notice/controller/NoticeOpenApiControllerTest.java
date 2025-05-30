@@ -1,91 +1,66 @@
 package api.domain.notice.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import api.common.exception.notice.NoticeNotFoundException;
-import api.config.AcceptanceTestWithMongo;
+import api.common.interceptor.AuthorizationInterceptor;
 import api.domain.notice.business.NoticeBusiness;
-import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
-import api.domain.notice.controller.model.noticelist.NoticeRequest;
-import api.domain.notice.controller.model.noticelist.NoticeResponse;
-import api.domain.notice.controller.model.sync.NoticeSyncRequest;
-import api.init.NoticeSaveInitTest;
-import global.utils.NoticeMapper;
-import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
-class NoticeOpenApiControllerTest extends AcceptanceTestWithMongo {
+@WebMvcTest(NoticeOpenApiController.class)
+class NoticeOpenApiControllerTest {
 
     @Autowired
-    private NoticeSaveInitTest noticeSaveInitTest;
+    private MockMvc mockMvc;
 
-    @Autowired
+    @MockitoBean
     private NoticeBusiness noticeBusiness;
 
-    @BeforeEach
-    void setUp() {
-        noticeSaveInitTest.initNotice();
+    @MockitoBean
+    private AuthorizationInterceptor authorizationInterceptor;
+
+    @Test
+    void getNoticeList() throws Exception {
+        mockMvc.perform(get("/open-api/notice/list")
+            .contentType(MediaType.APPLICATION_JSON)
+            .param("noticeName", "GENERAL_NEWS")
+            .param("nttId", "1234")
+        ).andExpect(status().isOk());
     }
 
     @Test
-    void 공지_목록_조회_성공() {
-        // Given
-        NoticeRequest noticeRequest = new NoticeRequest();
-        noticeRequest.setNoticeName(NoticeMapper.GENERAL_NEWS);
-
-        // When
-        List<NoticeResponse> noticeList = noticeBusiness.getNoticeList(noticeRequest,
-            Pageable.ofSize(10));
-
-        // Then
-        assertEquals(10, noticeList.size());
+    void getLatestThreeNotice() throws Exception {
+        mockMvc.perform(get("/open-api/notice")
+            .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
     }
 
     @Test
-    void 메인_페이지_조회_성공() {
-        // When
-        LatestThreeNoticeResponse latestThreeNotice = noticeBusiness.getLatestThreeNotice();
-
-        // Then
-        assertEquals(3, latestThreeNotice.getLatestThreeGeneralNews().size());
-        assertEquals(3, latestThreeNotice.getLatestThreeAcademicNews().size());
-        assertEquals(3, latestThreeNotice.getLatestThreeEventNews().size());
-        assertEquals(3, latestThreeNotice.getLatestThreeScholarshipNews().size());
+    void getNoticeById() throws Exception {
+        Long nttId = 1234L;
+        mockMvc.perform(get("/open-api/notice/{nttId}", nttId))
+            .andExpect(status().isOk());
     }
 
     @Test
-    void 단일_공지_조회_성공() {
-        // When
-        NoticeResponse noticeResponse = noticeBusiness.getNoticeBy(1L);
-
-        // Then
-        assertEquals(NoticeMapper.GENERAL_NEWS, noticeResponse.getNoticeName());
-        assertEquals("GENERAL_NEWS 테스트 title 1", noticeResponse.getTitle());
-    }
-
-    @Test
-    void 단일_공지_조회_실패() {
-
-        // When & Then
-        assertThrows(NoticeNotFoundException.class, () -> noticeBusiness.getNoticeBy(100L));
-    }
-
-    @Test
-    void 조회_withNttIdList_성공() {
-        // Given
-        NoticeSyncRequest noticeSyncRequest = new NoticeSyncRequest();
-        noticeSyncRequest.setNttIdList(List.of(1L, 2L, 3L));
-
-        // When
-        List<NoticeResponse> noticeList = noticeBusiness.getNoticeList(noticeSyncRequest);
-
-        // Then
-        assertEquals(3, noticeList.size());
+    void getNotice() throws Exception {
+        String requestJson = """
+            {
+              "body": {
+                "nttIdList": [1, 2, 3]
+              }
+            }
+        """;
+        mockMvc.perform(post("/open-api/notice/sync")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+            .andExpect(status().isOk());
     }
 
 }

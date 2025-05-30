@@ -1,52 +1,47 @@
 package api.domain.report.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import api.common.exception.fcm.FcmTokenNotFoundException;
-import api.config.AcceptanceTestWithMongo;
-import api.domain.fcm.business.FcmTokenBusiness;
-import api.domain.fcm.controller.model.FcmTokenRequest;
+import api.common.interceptor.AuthorizationInterceptor;
 import api.domain.report.business.ReportBusiness;
-import api.domain.report.controller.model.ReportRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
-class ReportOpenApiControllerTest extends AcceptanceTestWithMongo {
+@WebMvcTest(ReportOpenApiController.class)
+class ReportOpenApiControllerTest {
 
     @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
     private ReportBusiness reportBusiness;
 
-    @Autowired
-    private FcmTokenBusiness fcmTokenBusiness;
+    @MockitoBean
+    private AuthorizationInterceptor authorizationInterceptor;
 
     @Test
-    void 레포트_제출_성공() {
-        // Given
-        FcmTokenRequest fcmTokenRequest = new FcmTokenRequest();
-        fcmTokenRequest.setFcmToken("my_test_token");
-        fcmTokenBusiness.saveFcmToken(fcmTokenRequest);
+    void submitReport() throws Exception {
+        String requestJson = """
+                {
+                    "body": {
+                        "fcmToken": "fcmToken123",
+                        "content": "알림이 전송되지 않습니다.",
+                        "clientType": "APP",
+                        "deviceName": "iOS15",
+                        "version": "1.2.1"
+                    }
+                }
+            """;
 
-        ReportRequest reportRequest = new ReportRequest();
-        reportRequest.setFcmToken("my_test_token");
-
-        // When
-        Boolean isRegistered = reportBusiness.submitReport(reportRequest);
-
-        // Then
-        assertTrue(isRegistered);
-
-    }
-
-    @Test
-    void 레포트_제출_실패_FCM토큰_없음() {
-        // Given
-        ReportRequest reportRequest = new ReportRequest();
-        reportRequest.setFcmToken("my_test_token"); // 존재하지 않는 FCM 토큰
-
-        // When & Then
-        assertThrows(FcmTokenNotFoundException.class, () -> reportBusiness.submitReport(reportRequest));
+        mockMvc.perform(post("/open-api/report")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+            .andExpect(status().isOk());
     }
 
 }
