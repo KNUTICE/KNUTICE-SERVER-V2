@@ -8,8 +8,6 @@ import static org.mockito.Mockito.*;
 import api.common.interceptor.AuthorizationInterceptor;
 import api.domain.topic.business.TopicBusiness;
 import api.domain.topic.controller.model.TopicSubscriptionRequest;
-import global.api.Api;
-import global.utils.NoticeMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -54,7 +52,7 @@ class TopicOpenApiControllerTest {
     void getTopicStatus() throws Exception {
         String fcmToken = "fcmToken123";
         mockMvc.perform(get("/open-api/topic")
-                .param("fcmToken", fcmToken)
+                .header("fcmToken", fcmToken)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
     }

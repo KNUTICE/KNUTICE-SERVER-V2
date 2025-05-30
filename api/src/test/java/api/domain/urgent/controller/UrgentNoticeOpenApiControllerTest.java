@@ -1,44 +1,56 @@
 package api.domain.urgent.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import api.config.AcceptanceTestWithMongo;
-import api.domain.admin.service.AdminService;
+import api.common.interceptor.AuthorizationInterceptor;
 import api.domain.urgent.business.UrgentNoticeBusiness;
 import api.domain.urgent.controller.model.UrgentNoticeResponse;
-import db.domain.urgent.UrgentNoticeDocument;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
-class UrgentNoticeOpenApiControllerTest extends AcceptanceTestWithMongo {
+@WebMvcTest(UrgentNoticeOpenApiController.class)
+class UrgentNoticeOpenApiControllerTest {
 
     @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
     private UrgentNoticeBusiness urgentNoticeBusiness;
 
+    @MockitoBean
+    private AuthorizationInterceptor authorizationInterceptor;
+
     @Autowired
-    private AdminService adminService;
+    private ObjectMapper objectMapper;
 
     @Test
-    void 긴급공지_조회_성공() {
-
+    void getUrgentNotice_성공적으로_조회함() throws Exception {
         // Given
-        UrgentNoticeDocument urgentNoticeDocument = UrgentNoticeDocument.builder()
-            .title("테스트")
-            .content("내용")
-            .contentUrl("URL")
-            .registeredAt(LocalDate.now())
+        UrgentNoticeResponse response = UrgentNoticeResponse.builder()
+            .title("긴급 공지")
+            .content("긴급 공지 내용")
+            .contentUrl("https://example.com")
+            .registeredAt(LocalDate.of(2024, 5, 1))
             .build();
-        adminService.saveUrgentNoticeBy(urgentNoticeDocument);
 
-        // When
-        UrgentNoticeResponse urgentNotice = urgentNoticeBusiness.getUrgentNotice();
+        when(urgentNoticeBusiness.getUrgentNotice()).thenReturn(response);
 
-        // Then
-        assertEquals(urgentNoticeDocument.getTitle(), urgentNotice.getTitle());
-        assertEquals(urgentNoticeDocument.getContent(), urgentNotice.getContent());
-        assertEquals(urgentNoticeDocument.getContentUrl(), urgentNotice.getContentUrl());
+        // When & Then
+        mockMvc.perform(get("/open-api/urgent"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.body.title").value("긴급 공지"))
+            .andExpect(jsonPath("$.body.content").value("긴급 공지 내용"))
+            .andExpect(jsonPath("$.body.contentUrl").value("https://example.com"))
+            .andExpect(jsonPath("$.body.registeredAt").value("2024-05-01"));
+
+        verify(urgentNoticeBusiness, times(1)).getUrgentNotice();
     }
+
 }
