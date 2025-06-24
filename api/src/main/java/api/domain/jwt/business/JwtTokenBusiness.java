@@ -60,9 +60,4 @@ public class JwtTokenBusiness {
         throw new JwtTokenSignatureException(JwtTokenErrorCode.INVALID_TOKEN);
     }
 
-    public JwtTokenValidationResponse tokenValidation(JwtTokenValidationRequest token) {
-        JwtTokenInfo jwtTokenInfo = jwtTokenService.validationToken(token.getToken().substring(7));
-        return JwtTokenValidationResponse.builder().userId(jwtTokenInfo.getUserId()).build();
-    }
-
 }
