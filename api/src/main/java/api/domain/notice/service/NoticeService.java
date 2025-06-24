@@ -59,4 +59,19 @@ public class NoticeService {
         return noticeDocumentList;
     }
 
+    /**
+     * Admin Service
+     * @param noticeDocument
+     * @return
+     */
+    public Boolean saveNoticeBy(NoticeDocument noticeDocument) {
+        NoticeDocument savedNoticeDocument = noticeMongoRepository.save(noticeDocument);
+        return savedNoticeDocument.getNttId() != null;
+    }
+
+    public void deleteNotice(Long nttId) {
+        noticeMongoRepository.deleteById(nttId);
+    }
+
+
 }

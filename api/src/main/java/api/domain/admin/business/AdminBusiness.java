@@ -9,12 +9,14 @@ import api.domain.admin.controller.model.response.ReportDetailResponse;
 import api.domain.admin.controller.model.response.ReportListResponse;
 import api.domain.admin.controller.model.request.UrgentNoticeSaveRequest;
 import api.domain.admin.controller.model.response.FcmTokenInfoList;
-import api.domain.admin.service.AdminService;
 import api.domain.fcm.converter.FcmTokenConverter;
+import api.domain.fcm.service.FcmTokenService;
 import api.domain.notice.converter.NoticeConverter;
 import api.domain.notice.service.NoticeService;
 import api.domain.report.converter.ReportConverter;
+import api.domain.report.service.ReportService;
 import api.domain.urgent.converter.UrgentNoticeConverter;
+import api.domain.urgent.service.UrgentNoticeService;
 import db.domain.notice.NoticeDocument;
 import db.domain.report.ReportDocument;
 import db.domain.token.fcm.FcmTokenDocument;
@@ -27,8 +29,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminBusiness {
 
-    private final AdminService adminService;
     private final NoticeService noticeService;
+    private final UrgentNoticeService urgentNoticeService;
+    private final ReportService reportService;
+    private final FcmTokenService fcmTokenService;
 
     private final NoticeConverter noticeConverter;
     private final UrgentNoticeConverter urgentNoticeConverter;
@@ -36,70 +40,53 @@ public class AdminBusiness {
     private final FcmTokenConverter fcmTokenConverter;
 
     public Boolean saveNotice(NoticeSaveRequest noticeSaveRequest) {
-
-        Boolean existsNotice = noticeService.existsNoticeBy(noticeSaveRequest.getNttId());
-
-        if (existsNotice) {
+        if (noticeService.existsNoticeBy(noticeSaveRequest.getNttId())) {
             throw new NoticeExistsException(NoticeErrorCode.NOTICE_ALREADY_EXISTS);
         }
 
         NoticeDocument noticeDocument = noticeConverter.toDocument(noticeSaveRequest);
-        return adminService.saveNoticeBy(noticeDocument);
+        return noticeService.saveNoticeBy(noticeDocument);
     }
 
     public Boolean deleteNotice(Long nttId) {
-
-        Boolean existsNotice = noticeService.existsNoticeBy(nttId);
-
-        if (!existsNotice) {
+        if (!noticeService.existsNoticeBy(nttId)) {
             throw new NoticeNotFoundException(NoticeErrorCode.NOTICE_NOT_FOUND);
         }
-        adminService.deleteNotice(nttId);
+        noticeService.deleteNotice(nttId);
         return true;
     }
 
     public Boolean updateNotice(NoticeUpdateRequest noticeUpdateRequest) {
         NoticeDocument noticeDocument = noticeService.getNoticeBy(noticeUpdateRequest.getNttId());
-
-        setNotice(noticeUpdateRequest, noticeDocument);
-
-        return adminService.saveNoticeBy(noticeDocument);
-    }
-
-    private static void setNotice(
-        NoticeUpdateRequest noticeUpdateRequest, NoticeDocument noticeDocument
-    ) {
-        noticeDocument.setContentNumber(noticeUpdateRequest.getContentNumber());
-        noticeDocument.setTitle(noticeUpdateRequest.getTitle());
-        noticeDocument.setContentUrl(noticeUpdateRequest.getContentUrl());
-        noticeDocument.setContentImage(noticeUpdateRequest.getContentImage());
-        noticeDocument.setDepartmentName(noticeUpdateRequest.getDepartmentName());
-        noticeDocument.setRegisteredAt(noticeUpdateRequest.getRegisteredAt());
-        noticeDocument.setNoticeName(noticeUpdateRequest.getNoticeName());
+        noticeConverter.updateDocument(noticeDocument, noticeUpdateRequest);
+        return noticeService.saveNoticeBy(noticeDocument);
     }
 
     public Boolean saveUrgentNotice(UrgentNoticeSaveRequest urgentNoticeSaveRequest) {
+        // 기존 긴급 공지 모두 삭제
+        urgentNoticeService.deleteAllUrgentNotice();
+
         UrgentNoticeDocument urgentNoticeDocument = urgentNoticeConverter.toDocument(
             urgentNoticeSaveRequest);
-        return adminService.saveUrgentNoticeBy(urgentNoticeDocument);
+        return urgentNoticeService.saveUrgentNoticeBy(urgentNoticeDocument);
     }
 
-    public Boolean deleteAllUrgentNotice() {
-        return adminService.deleteAllUrgentNotice();
+    public Boolean deleteUrgentNotice() {
+        return urgentNoticeService.deleteAllUrgentNotice();
     }
 
     public List<ReportListResponse> getReportList() {
-        List<ReportDocument> reportDocumentList = adminService.getReportList();
+        List<ReportDocument> reportDocumentList = reportService.getReportList();
         return reportConverter.toListResponse(reportDocumentList);
     }
 
     public ReportDetailResponse getReportBy(String reportId) {
-        ReportDocument reportDocument = adminService.getReportBy(reportId);
+        ReportDocument reportDocument = reportService.getReportBy(reportId);
         return reportConverter.toDetailResponse(reportDocument);
     }
 
     public List<FcmTokenInfoList> getFcmTokenList() {
-        List<FcmTokenDocument> fcmTokenDocumentList = adminService.getFcmTokenList();
+        List<FcmTokenDocument> fcmTokenDocumentList = fcmTokenService.getFcmTokenList();
         return fcmTokenConverter.toListResponse(fcmTokenDocumentList);
     }
 

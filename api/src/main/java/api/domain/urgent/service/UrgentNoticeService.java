@@ -15,12 +15,18 @@ public class UrgentNoticeService {
     private final UrgentNoticeMongoRepository urgentNoticeMongoRepository;
 
     public List<UrgentNoticeDocument> getUrgentNoticeList() {
-        List<UrgentNoticeDocument> urgentNoticeEntityList = urgentNoticeMongoRepository.findAll();
+        return urgentNoticeMongoRepository.findAll();
+    }
 
-        if (urgentNoticeEntityList.isEmpty()) {
-            throw new UrgentNoticeNotFoundException(UrgentNoticeErrorCode.URGENT_NOTICE_NOT_FOUND);
-        }
-        return urgentNoticeEntityList;
+    public Boolean saveUrgentNoticeBy(UrgentNoticeDocument urgentNoticeDocument) {
+        UrgentNoticeDocument savedUrgentNotice = urgentNoticeMongoRepository.save(
+            urgentNoticeDocument);
+        return savedUrgentNotice.getId() != null;
+    }
+
+    public Boolean deleteAllUrgentNotice() {
+        urgentNoticeMongoRepository.deleteAll();
+        return true;
     }
 
 }

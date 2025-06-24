@@ -1,5 +1,7 @@
 package api.domain.urgent.business;
 
+import api.common.error.UrgentNoticeErrorCode;
+import api.common.exception.urgent.UrgentNoticeNotFoundException;
 import api.domain.urgent.controller.model.UrgentNoticeResponse;
 import api.domain.urgent.converter.UrgentNoticeConverter;
 import api.domain.urgent.service.UrgentNoticeService;
@@ -18,6 +20,11 @@ public class UrgentNoticeBusiness {
 
     public UrgentNoticeResponse getUrgentNotice() {
         List<UrgentNoticeDocument> UrgentNoticeDocument = urgentNoticeService.getUrgentNoticeList();
+
+        if (UrgentNoticeDocument.isEmpty()) {
+            throw new UrgentNoticeNotFoundException(UrgentNoticeErrorCode.URGENT_NOTICE_NOT_FOUND);
+        }
+
         return urgentNoticeConverter.toResponse(UrgentNoticeDocument.get(0)); // 단일 공지 반환
     }
 

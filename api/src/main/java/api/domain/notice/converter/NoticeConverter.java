@@ -1,6 +1,7 @@
 package api.domain.notice.converter;
 
 import api.domain.admin.controller.model.request.NoticeSaveRequest;
+import api.domain.admin.controller.model.request.NoticeUpdateRequest;
 import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
 import api.domain.notice.controller.model.noticelist.NoticeRequest;
 import api.domain.notice.controller.model.noticelist.NoticeResponse;
@@ -100,6 +101,16 @@ public class NoticeConverter {
             .departmentName(noticeSaveRequest.getDepartmentName())
             .registeredAt(noticeSaveRequest.getRegisteredAt())
             .build();
+    }
+
+    public void updateDocument(NoticeDocument noticeDocument, NoticeUpdateRequest request) {
+        noticeDocument.setContentNumber(request.getContentNumber());
+        noticeDocument.setTitle(request.getTitle());
+        noticeDocument.setContentUrl(request.getContentUrl());
+        noticeDocument.setContentImage(request.getContentImage());
+        noticeDocument.setDepartmentName(request.getDepartmentName());
+        noticeDocument.setRegisteredAt(request.getRegisteredAt());
+        noticeDocument.setNoticeName(request.getNoticeName());
     }
 
 }
