@@ -13,9 +13,11 @@ import global.api.Api;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,21 +31,19 @@ public class AdminApiController {
 
     private final CrawlerClient crawlerClient;
 
-    @PostMapping()
-    public Api<Boolean> saveNotice(
-        @RequestBody @Valid Api<NoticeSaveRequest> noticeSaveRequestApi
-    ) {
-        Boolean response = adminBusiness.saveNotice(noticeSaveRequestApi.getBody());
+    @PostMapping("/notices")
+    public Api<Boolean> saveNotice(@RequestBody @Valid Api<NoticeSaveRequest> noticeSaveRequest) {
+        Boolean response = adminBusiness.saveNotice(noticeSaveRequest.getBody());
         return Api.OK(response);
     }
 
-    @PostMapping("/{nttId}")
+    @DeleteMapping("/notices/{nttId}")
     public Api<Boolean> deleteNotice(@PathVariable Long nttId) {
         Boolean response = adminBusiness.deleteNotice(nttId);
         return Api.OK(response);
     }
 
-    @PostMapping("/update")
+    @PutMapping("/notices")
     public Api<Boolean> updateNotice(
         @RequestBody @Valid Api<NoticeUpdateRequest> noticeUpdateRequest
     ) {
@@ -51,7 +51,7 @@ public class AdminApiController {
         return Api.OK(response);
     }
 
-    @PostMapping("/urgent")
+    @PostMapping("/urgent-notices")
     public Api<Boolean> saveUrgentNotice(
         @RequestBody @Valid Api<UrgentNoticeSaveRequest> urgentNoticeSaveRequest
     ) {
@@ -59,19 +59,19 @@ public class AdminApiController {
         return Api.OK(response);
     }
 
-    @PostMapping("/urgent/delete")
+    @DeleteMapping("/urgent-notices")
     public Api<Boolean> deleteAllUrgentNotice() {
-        Boolean response = adminBusiness.deleteAllUrgentNotice();
+        Boolean response = adminBusiness.deleteUrgentNotice();
         return Api.OK(response);
     }
 
-    @GetMapping("/report")
+    @GetMapping("/reports")
     public Api<List<ReportListResponse>> getReportList() {
         List<ReportListResponse> responseList = adminBusiness.getReportList();
         return Api.OK(responseList);
     }
 
-    @GetMapping("/report/{reportId}")
+    @GetMapping("/reports/{reportId}")
     public Api<ReportDetailResponse> getReport(@PathVariable String reportId) {
         ReportDetailResponse response = adminBusiness.getReportBy(reportId);
         return Api.OK(response);
@@ -83,7 +83,7 @@ public class AdminApiController {
         return Api.OK(responseList);
     }
 
-    @PostMapping("/message")
+    @PostMapping("/messages")
     public Api<Boolean> sendMessage(@RequestBody @Valid Api<FcmRequest> request) {
         crawlerClient.sendMessage(request.getBody().getFcmToken(), request.getBody());
         return Api.OK(true);

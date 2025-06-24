@@ -49,14 +49,12 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
             throw new UserNotPermitted(UserErrorCode.USER_NOT_PERMITTED);
         }
 
-        if (jwtTokenInfo != null) {
-            RequestAttributes requestContext = Objects.requireNonNull(
-                RequestContextHolder.getRequestAttributes());
-            requestContext.setAttribute(X_USER_ID, jwtTokenInfo.getUserId(),
-                RequestAttributes.SCOPE_REQUEST);
-            requestContext.setAttribute(X_USER_ROLE, jwtTokenInfo.getRole(),
-                RequestAttributes.SCOPE_REQUEST);
-        }
+        RequestAttributes requestContext = Objects.requireNonNull(
+            RequestContextHolder.getRequestAttributes());
+        requestContext.setAttribute(X_USER_ID, jwtTokenInfo.getUserId(),
+            RequestAttributes.SCOPE_REQUEST);
+        requestContext.setAttribute(X_USER_ROLE, jwtTokenInfo.getRole(),
+            RequestAttributes.SCOPE_REQUEST);
 
         return true;
     }

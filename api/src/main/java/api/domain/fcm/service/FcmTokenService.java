@@ -4,6 +4,7 @@ import api.common.error.FcmTokenErrorCode;
 import api.common.exception.fcm.FcmTokenNotFoundException;
 import db.domain.token.fcm.FcmTokenDocument;
 import db.domain.token.fcm.FcmTokenMongoRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,10 @@ public class FcmTokenService {
 
     public boolean existsBy(String fcmToken) {
         return fcmTokenMongoRepository.existsById(fcmToken);
+    }
+
+    public List<FcmTokenDocument> getFcmTokenList() {
+        return fcmTokenMongoRepository.findAll();
     }
 
 }

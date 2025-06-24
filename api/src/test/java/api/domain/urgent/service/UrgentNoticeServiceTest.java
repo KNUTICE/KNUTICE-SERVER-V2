@@ -1,10 +1,8 @@
 package api.domain.urgent.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-import api.common.exception.urgent.UrgentNoticeNotFoundException;
 import db.domain.urgent.UrgentNoticeDocument;
 import db.domain.urgent.UrgentNoticeMongoRepository;
 import java.util.Collections;
@@ -51,9 +49,11 @@ class UrgentNoticeServiceTest {
         // Given
         when(urgentNoticeMongoRepository.findAll()).thenReturn(Collections.emptyList());
 
-        // When & Then
-        assertThatThrownBy(() -> urgentNoticeService.getUrgentNoticeList())
-            .isInstanceOf(UrgentNoticeNotFoundException.class);
+        // When
+        List<UrgentNoticeDocument> result = urgentNoticeService.getUrgentNoticeList();
+
+        // Then
+        assertThat(result).isEmpty();
     }
 
 }

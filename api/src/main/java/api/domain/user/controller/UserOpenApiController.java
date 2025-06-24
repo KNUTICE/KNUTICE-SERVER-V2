@@ -8,6 +8,8 @@ import api.domain.user.controller.model.register.UserRegisterRequest;
 import global.api.Api;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/open-api/user")
+@RequestMapping("/open-api/users")
 public class UserOpenApiController {
 
     private final UserBusiness userBusiness;
@@ -24,22 +26,19 @@ public class UserOpenApiController {
     public Api<Boolean> register(
         @RequestBody @Valid Api<UserRegisterRequest> userRegisterRequest
     ) {
-        Boolean response = userBusiness.register(userRegisterRequest.getBody());
-        return Api.OK(response);
+        return Api.OK(userBusiness.register(userRegisterRequest.getBody()));
     }
 
-    @PostMapping("/duplication/email")
+    @GetMapping("/check-email")
     public Api<Boolean> duplicationEmailCheck(
-        @RequestBody @Valid Api<DuplicationEmailRequest> duplicationEmailRequest
+        @ModelAttribute @Valid DuplicationEmailRequest duplicationEmailRequest
     ) {
-        Boolean response = userBusiness.duplicationEmailCheck(duplicationEmailRequest.getBody());
-        return Api.OK(response);
+        return Api.OK(userBusiness.duplicationEmailCheck(duplicationEmailRequest));
     }
 
     @PostMapping("/login")
     public Api<JwtTokenResponse> login(@RequestBody @Valid Api<UserLoginRequest> userLoginRequest) {
-        JwtTokenResponse response = userBusiness.login(userLoginRequest.getBody());
-        return Api.OK(response);
+        return Api.OK(userBusiness.login(userLoginRequest.getBody()));
     }
 
 }

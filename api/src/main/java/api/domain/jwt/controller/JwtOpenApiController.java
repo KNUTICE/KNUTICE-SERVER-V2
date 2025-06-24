@@ -14,24 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/open-api/jwt")
+@RequestMapping("/open-api/auth")
 public class JwtOpenApiController {
 
     private final JwtTokenBusiness jwtTokenBusiness;
 
-    @PostMapping("/reissue")
+    @PostMapping("/token/refresh")
     public Api<JwtTokenDto> reIssueAccessToken(@RequestHeader("Authorization") String refreshToken){
-        JwtTokenDto response = jwtTokenBusiness.reIssueAccessToken(refreshToken);
-        return Api.OK(response);
-    }
-
-    @PostMapping()
-    public Api<JwtTokenValidationResponse> validationToken(
-        @RequestBody JwtTokenValidationRequest jwtTokenValidationRequest
-    ){
-        JwtTokenValidationResponse response = jwtTokenBusiness.tokenValidation(
-            jwtTokenValidationRequest);
-        return Api.OK(response);
+        return Api.OK(jwtTokenBusiness.reIssueAccessToken(refreshToken));
     }
 
 }
