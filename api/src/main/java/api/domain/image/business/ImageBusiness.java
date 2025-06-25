@@ -13,14 +13,13 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@Slf4j
 @Business
 @RequiredArgsConstructor
-@Slf4j
 public class ImageBusiness {
 
     private final LocalImageStorageService localImageStorageService;
@@ -38,18 +37,24 @@ public class ImageBusiness {
     @Value("${file.context-path}")
     private String contextPath;
 
-    @Async
     public void uploadImage(MultipartFile multipartFile, ImageKind imageKind) {
-
         if (multipartFile.isEmpty()) {
             throw new ImageNotFoundException(ImageErrorCode.IMAGE_NOT_FOUND);
         }
 
-        // 디렉터리 저장
-        Path imagePath = localImageStorageService.storeImage(multipartFile);
+        // DEFAULT IMAGE 가 존재하는 경우 삭제
+        if (imageKind.equals(ImageKind.DEFAULT_IMAGE)) {
+            imageService.getImageByKind(imageKind).ifPresent(existingImage -> {
+                imageService.deleteImageMetaData(existingImage);
+                localImageStorageService.deleteImageAsync(existingImage);
+            });
+        }
 
-        // DB 저장
-        imageService.saveImageMetaData(createMetaData(multipartFile, imageKind, imagePath));
+        // 디렉터리 저장
+        localImageStorageService.storeImageAsync(multipartFile).thenAccept(newImagePath -> {
+            ImageDocument newImage = createMetaData(multipartFile, imageKind, newImagePath);
+            imageService.saveImageMetaData(newImage);
+        });
     }
 
     private ImageDocument createMetaData(MultipartFile multipartFile, ImageKind imageKind, Path imagePath) {

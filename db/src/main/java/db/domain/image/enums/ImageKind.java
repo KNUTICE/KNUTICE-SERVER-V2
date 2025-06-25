@@ -7,7 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ImageKind {
 
-    DEFAULT_IMAGE("기본 이미지")
+    DEFAULT_IMAGE("기본 이미지"),
+    TIP_IMAGE("사용 팁 이미지")
     ;
 
     private final String description;
