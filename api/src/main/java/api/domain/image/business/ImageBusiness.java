@@ -2,6 +2,8 @@ package api.domain.image.business;
 
 import api.common.error.ImageErrorCode;
 import api.common.exception.image.ImageNotFoundException;
+import api.domain.image.controller.model.ImageResponse;
+import api.domain.image.converter.ImageConverter;
 import api.domain.image.service.ImageService;
 import api.domain.image.service.LocalImageStorageService;
 import api.domain.image.utils.FileUtils;
@@ -9,6 +11,7 @@ import db.domain.image.ImageDocument;
 import db.domain.image.enums.ImageKind;
 import global.annotation.Business;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +27,8 @@ public class ImageBusiness {
 
     private final LocalImageStorageService localImageStorageService;
     private final ImageService imageService;
+
+    private final ImageConverter imageConverter;
 
     @Value("${url.host}")
     private String host;
@@ -55,6 +60,14 @@ public class ImageBusiness {
             ImageDocument newImage = createMetaData(multipartFile, imageKind, newImagePath);
             imageService.saveImageMetaData(newImage);
         });
+    }
+
+    public List<ImageResponse> getImagesBy(ImageKind imageKind) {
+        List<ImageDocument> imageDocuments = imageService.getImagesBy(imageKind);
+        if (imageDocuments.isEmpty()) {
+            throw new ImageNotFoundException(ImageErrorCode.IMAGE_NOT_FOUND);
+        }
+        return imageConverter.toResponse(imageDocuments);
     }
 
     private ImageDocument createMetaData(MultipartFile multipartFile, ImageKind imageKind, Path imagePath) {

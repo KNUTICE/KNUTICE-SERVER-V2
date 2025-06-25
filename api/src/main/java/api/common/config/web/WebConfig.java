@@ -23,6 +23,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    @Value("${file.context-path}")
+    private String contextPath;
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
@@ -48,7 +51,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry
-            .addResourceHandler("/images/**")
+            .addResourceHandler("/" + contextPath + "**")
             .addResourceLocations("file:" + uploadDir)
         ;
     }
