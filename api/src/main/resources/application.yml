@@ -18,6 +18,14 @@ jwt:
   refresh-token:
     plus-hour: ${JWT_REFRESH_PLUS_HOUR}
 
+file:
+  upload-dir: ${FILE_UPLOAD_DIR}
+  context-path: ${FILE_CONTEXT_PATH}
+
+url:
+  scheme: ${URL_SCHEME}
+  host: ${URL_HOST}
+
 logging:
   level:
     org:

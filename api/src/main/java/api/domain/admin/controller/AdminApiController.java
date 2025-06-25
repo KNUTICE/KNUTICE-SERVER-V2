@@ -9,6 +9,8 @@ import api.domain.admin.controller.model.response.ReportDetailResponse;
 import api.domain.admin.controller.model.response.ReportListResponse;
 import api.domain.admin.controller.model.request.UrgentNoticeSaveRequest;
 import api.domain.admin.controller.model.response.FcmTokenInfoList;
+import api.domain.image.business.ImageBusiness;
+import db.domain.image.enums.ImageKind;
 import global.api.Api;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -20,7 +22,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminApiController {
 
     private final AdminBusiness adminBusiness;
+    private final ImageBusiness imageBusiness;
 
     private final CrawlerClient crawlerClient;
 
@@ -86,6 +92,15 @@ public class AdminApiController {
     @PostMapping("/messages")
     public Api<Boolean> sendMessage(@RequestBody @Valid Api<FcmRequest> request) {
         crawlerClient.sendMessage(request.getBody().getFcmToken(), request.getBody());
+        return Api.OK(true);
+    }
+
+    @PostMapping("/images")
+    public Api<Boolean> uploadImage(
+        @RequestPart("image") MultipartFile multipartFile,
+        @RequestParam ImageKind imageKind
+    ) {
+        imageBusiness.uploadImage(multipartFile, imageKind);
         return Api.OK(true);
     }
 
