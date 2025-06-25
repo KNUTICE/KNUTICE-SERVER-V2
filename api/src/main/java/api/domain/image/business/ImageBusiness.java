@@ -70,7 +70,17 @@ public class ImageBusiness {
         return imageConverter.toResponse(imageDocuments);
     }
 
-    private ImageDocument createMetaData(MultipartFile multipartFile, ImageKind imageKind, Path imagePath) {
+    public void deleteImage(String imageId) {
+        imageService.getImageBy(imageId).ifPresentOrElse(imageDocument -> {
+            localImageStorageService.deleteImageAsync(imageDocument);
+            imageService.deleteImageBy(imageDocument.getId());
+        }, () -> {
+            throw new ImageNotFoundException(ImageErrorCode.IMAGE_NOT_FOUND);
+        });
+    }
+
+    private ImageDocument createMetaData(MultipartFile multipartFile, ImageKind imageKind,
+        Path imagePath) {
         String originalFileName = StringUtils.cleanPath(
             Objects.requireNonNull(multipartFile.getOriginalFilename()));
         String fileName = imagePath.getFileName().toString();

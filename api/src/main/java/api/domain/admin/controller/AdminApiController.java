@@ -104,4 +104,10 @@ public class AdminApiController {
         return Api.OK(true);
     }
 
+    @DeleteMapping("/images")
+    public Api<Boolean> deleteImage(@RequestParam String imageId) {
+        imageBusiness.deleteImage(imageId);
+        return Api.OK(true);
+    }
+
 }

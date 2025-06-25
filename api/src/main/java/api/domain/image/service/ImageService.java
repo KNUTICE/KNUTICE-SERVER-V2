@@ -26,8 +26,16 @@ public class ImageService {
             imageMongoRepository.delete(imageDocument);
     }
 
+    public void deleteImageBy(String imageId) {
+        imageMongoRepository.deleteById(imageId);
+    }
+
     public List<ImageDocument> getImagesBy(ImageKind imageKind) {
         return imageMongoRepository.findAllByImageKind(imageKind);
+    }
+
+    public Optional<ImageDocument> getImageBy(String imageId) {
+        return imageMongoRepository.findById(imageId);
     }
 
 }
