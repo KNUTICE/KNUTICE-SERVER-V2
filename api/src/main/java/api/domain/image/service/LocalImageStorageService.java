@@ -33,13 +33,15 @@ public class LocalImageStorageService {
     public CompletableFuture<Path> storeImageAsync(MultipartFile multipartFile) {
         createDirectoryIfNotExists(directoryPath);
         Path imagePath = createImagePath(multipartFile);
-        try {
-            Files.copy(multipartFile.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            log.error("", e);
-            log.error("이미지를 저장하는 데 실패했습니다.");
-            throw new ImageStorageWriteException(ImageErrorCode.IMAGE_STORAGE_FAILED);
-        }
+        storeImage(multipartFile, imagePath);
+        return CompletableFuture.completedFuture(imagePath);
+    }
+
+    @Async
+    public CompletableFuture<Path> storeImageAsyncWithFileName(MultipartFile multipartFile, String fileName) {
+        createDirectoryIfNotExists(directoryPath);
+        Path imagePath = Paths.get(directoryPath, fileName);
+        storeImage(multipartFile, imagePath);
         return CompletableFuture.completedFuture(imagePath);
     }
 
@@ -51,6 +53,17 @@ public class LocalImageStorageService {
             log.info("이미지 삭제 성공");
         } catch (IOException e) {
             log.error("기존 이미지 파일 삭제 실패: {}", imageDocument.getImageUrl(), e);
+        }
+    }
+
+    private void storeImage(MultipartFile multipartFile, Path imagePath) {
+        createDirectoryIfNotExists(directoryPath);
+        try {
+            Files.copy(multipartFile.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
+            log.info("이미지를 저장하는 데 성공했습니다: {}", imagePath);
+        } catch (IOException e) {
+            log.error("이미지를 저장하는 데 실패했습니다: {}", imagePath, e);
+            throw new ImageStorageWriteException(ImageErrorCode.IMAGE_STORAGE_FAILED);
         }
     }
 
