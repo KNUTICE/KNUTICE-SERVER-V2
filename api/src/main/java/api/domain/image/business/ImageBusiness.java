@@ -10,15 +10,12 @@ import api.domain.image.utils.FileUtils;
 import db.domain.image.ImageDocument;
 import db.domain.image.enums.ImageKind;
 import global.annotation.Business;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @Business
@@ -30,36 +27,17 @@ public class ImageBusiness {
 
     private final ImageConverter imageConverter;
 
-    @Value("${url.host}")
-    private String host;
-
-    @Value("${server.port}")
-    private String port;
-
-    @Value("${url.scheme}")
-    private String scheme;
-
-    @Value("${file.context-path}")
-    private String contextPath;
-
     public void uploadImage(MultipartFile multipartFile, ImageKind imageKind) {
         if (multipartFile.isEmpty()) {
             throw new ImageNotFoundException(ImageErrorCode.IMAGE_NOT_FOUND);
         }
 
-        // DEFAULT IMAGE 가 존재하는 경우 삭제
-        if (imageKind.equals(ImageKind.DEFAULT_IMAGE)) {
-            imageService.getImageByKind(imageKind).ifPresent(existingImage -> {
-                imageService.deleteImageMetaData(existingImage);
-                localImageStorageService.deleteImageAsync(existingImage);
-            });
+        if (imageKind == ImageKind.DEFAULT_IMAGE) {
+            handleDefaultImageUpload(multipartFile, imageKind);
+            return;
         }
+        handleNewImageUpload(multipartFile, imageKind);
 
-        // 디렉터리 저장
-        localImageStorageService.storeImageAsync(multipartFile).thenAccept(newImagePath -> {
-            ImageDocument newImage = createMetaData(multipartFile, imageKind, newImagePath);
-            imageService.saveImageMetaData(newImage);
-        });
     }
 
     public List<ImageResponse> getImagesBy(ImageKind imageKind) {
@@ -79,33 +57,35 @@ public class ImageBusiness {
         });
     }
 
-    private ImageDocument createMetaData(MultipartFile multipartFile, ImageKind imageKind,
-        Path imagePath) {
-        String originalFileName = StringUtils.cleanPath(
-            Objects.requireNonNull(multipartFile.getOriginalFilename()));
-        String fileName = imagePath.getFileName().toString();
+    private void handleDefaultImageUpload(MultipartFile multipartFile, ImageKind imageKind) {
+        imageService.getImageByKind(imageKind).ifPresentOrElse(existingImage -> {
+            log.info("기존 DEFAULT_IMAGE 존재 → 덮어쓰기");
 
-        return ImageDocument.builder()
-            .imageUrl(createImageUrl(imagePath))
-            .originalName(FileUtils.getFileOfName(originalFileName))
-            .serverName(FileUtils.getFileOfName(fileName))
-            .extension(FileUtils.getExtension(fileName))
-            .imageKind(imageKind)
-            .build();
+            String fileName = existingImage.getServerName() + existingImage.getExtension();
+            localImageStorageService.storeImageAsyncWithFileName(multipartFile, fileName);
 
+            existingImage.setOriginalName(StringUtils.cleanPath(
+                Objects.requireNonNull(multipartFile.getOriginalFilename())));
+            existingImage.setExtension(FileUtils.getExtension(fileName));
+            imageService.saveImageMetaData(existingImage);
+
+        }, () -> {
+            log.info("DEFAULT_IMAGE 없음 → 새로 저장");
+            uploadAndSaveNewImage(multipartFile, imageKind);
+        });
     }
 
-    private String createImageUrl(Path filePath) {
-        UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
-            .scheme(scheme)
-            .host(host)
-            .path(contextPath + filePath.getFileName());
-
-        // localhost 일 때만 포트 추가
-        if ("localhost".equalsIgnoreCase(host)) {
-            builder.port(port);
-        }
-
-        return builder.toUriString();
+    private void handleNewImageUpload(MultipartFile multipartFile, ImageKind imageKind) {
+        log.info("새로운 이미지 저장 (DEFAULT 아님)");
+        uploadAndSaveNewImage(multipartFile, imageKind);
     }
+
+    private void uploadAndSaveNewImage(MultipartFile multipartFile, ImageKind imageKind) {
+        localImageStorageService.storeImageAsync(multipartFile)
+            .thenAccept(path -> {
+                ImageDocument document = imageConverter.toDocument(multipartFile, imageKind, path);
+                imageService.saveImageMetaData(document);
+            });
+    }
+
 }
