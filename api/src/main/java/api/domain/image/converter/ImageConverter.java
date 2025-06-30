@@ -7,11 +7,8 @@ import db.domain.image.enums.ImageKind;
 import global.annotation.Converter;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 @Converter
 @RequiredArgsConstructor
@@ -29,15 +26,11 @@ public class ImageConverter {
             .collect(Collectors.toList());
     }
 
-    public ImageDocument toDocument(MultipartFile multipartFile, ImageKind imageKind,
-        Path imagePath) {
-        String originalFileName = StringUtils.cleanPath(
-            Objects.requireNonNull(multipartFile.getOriginalFilename()));
+    public ImageDocument toDocument(String originalFilename, ImageKind imageKind, Path imagePath) {
         String fileName = imagePath.getFileName().toString();
-
         return ImageDocument.builder()
             .imageUrl(fileUtils.createImageUrl(imagePath))
-            .originalName(FileUtils.getFileOfName(originalFileName))
+            .originalName(FileUtils.getFileOfName(originalFilename))
             .serverName(FileUtils.getFileOfName(fileName))
             .extension(FileUtils.getExtension(fileName))
             .imageKind(imageKind)
