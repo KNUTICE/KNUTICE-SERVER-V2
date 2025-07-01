@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/open-api/urgent")
+@RequestMapping({"/open-api/urgent", "/open-api/urgent-notices"})
 public class UrgentNoticeOpenApiController {
 
     private final UrgentNoticeBusiness urgentNoticeBusiness;
 
-    @GetMapping
+    @GetMapping({"", "/latest"})
     public Api<UrgentNoticeResponse> getUrgentNotice() {
         UrgentNoticeResponse urgentNoticeResponse = urgentNoticeBusiness.getUrgentNotice();
         return Api.OK(urgentNoticeResponse);

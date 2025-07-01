@@ -17,7 +17,7 @@ public class FcmTokenOpenApiController {
 
     private final FcmTokenBusiness fcmTokenBusiness;
 
-    @PostMapping
+    @PostMapping({"", "/tokens"})
     public Api<Boolean> saveFcmToken(
         @RequestBody @Valid Api<FcmTokenRequest> fcmTokenRequest
     ) {

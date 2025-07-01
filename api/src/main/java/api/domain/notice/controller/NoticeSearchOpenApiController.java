@@ -17,12 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/open-api/search")
 public class NoticeSearchOpenApiController {
 
     private final NoticeSearchBusiness noticeSearchBusiness;
 
-    @GetMapping()
+    @GetMapping({"/open-api/search", "/open-api/notices/search"})
     public Api<List<NoticeResponse>> getNoticeList(
         @ModelAttribute @Valid NoticeSearchRequest NoticeSearchRequest,
         @PageableDefault(sort = "nttId", direction = Sort.Direction.DESC, size = 20) Pageable page)
