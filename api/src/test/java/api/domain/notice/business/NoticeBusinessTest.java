@@ -4,10 +4,10 @@ package api.domain.notice.business;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
-import api.domain.notice.controller.model.noticelist.NoticeRequest;
-import api.domain.notice.controller.model.noticelist.NoticeResponse;
-import api.domain.notice.controller.model.sync.NoticeSyncRequest;
+import api.domain.notice.controller.model.response.LatestThreeNoticeResponse;
+import api.domain.notice.controller.model.request.NoticeRequest;
+import api.domain.notice.controller.model.response.NoticeResponse;
+import api.domain.notice.controller.model.request.NoticeSyncRequest;
 import api.domain.notice.converter.NoticeConverter;
 import api.domain.notice.service.NoticeService;
 import db.domain.notice.NoticeDocument;

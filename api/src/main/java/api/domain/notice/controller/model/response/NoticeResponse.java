@@ -1,4 +1,4 @@
-package api.domain.notice.controller.model.noticelist;
+package api.domain.notice.controller.model.response;
 
 import global.utils.NoticeMapper;
 import lombok.AllArgsConstructor;

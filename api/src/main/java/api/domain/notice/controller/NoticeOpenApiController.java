@@ -1,10 +1,10 @@
 package api.domain.notice.controller;
 
 import api.domain.notice.business.NoticeBusiness;
-import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
-import api.domain.notice.controller.model.noticelist.NoticeRequest;
-import api.domain.notice.controller.model.noticelist.NoticeResponse;
-import api.domain.notice.controller.model.sync.NoticeSyncRequest;
+import api.domain.notice.controller.model.response.LatestThreeNoticeResponse;
+import api.domain.notice.controller.model.request.NoticeRequest;
+import api.domain.notice.controller.model.response.NoticeResponse;
+import api.domain.notice.controller.model.request.NoticeSyncRequest;
 import global.api.Api;
 import jakarta.validation.Valid;
 import java.util.List;

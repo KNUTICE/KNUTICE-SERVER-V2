@@ -2,12 +2,15 @@ package api.domain.report.business;
 
 import api.common.error.FcmTokenErrorCode;
 import api.common.exception.fcm.FcmTokenNotFoundException;
+import api.domain.report.controller.model.ReportDetailResponse;
+import api.domain.report.controller.model.ReportSimpleResponse;
 import api.domain.fcm.service.FcmTokenService;
 import api.domain.report.controller.model.ReportRequest;
 import api.domain.report.converter.ReportConverter;
 import api.domain.report.service.ReportService;
 import db.domain.report.ReportDocument;
 import global.annotation.Business;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @Business
@@ -30,5 +33,28 @@ public class ReportBusiness {
         ReportDocument reportDocument = reportConverter.toDocument(reportRequest);
         return reportService.submitReport(reportDocument);
     }
+
+    /**
+     * 관리자가 접수된 모든 신고 목록을 조회하는 메서드.
+     *
+     * @return 신고 목록 응답 리스트
+     */
+    public List<ReportSimpleResponse> getReportList() {
+        List<ReportDocument> reportDocumentList = reportService.getReportList();
+        return reportConverter.toListResponse(reportDocumentList);
+    }
+
+    /**
+     * 관리자가 특정 신고의 상세 내용을 조회하는 메서드.
+     *
+     * @param reportId 조회할 신고의 ID
+     * @return 신고 상세 응답 객체
+     */
+    public ReportDetailResponse getReportBy(String reportId) {
+        ReportDocument reportDocument = reportService.getReportBy(reportId);
+        return reportConverter.toDetailResponse(reportDocument);
+    }
+
+
 
 }

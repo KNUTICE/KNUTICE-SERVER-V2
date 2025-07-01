@@ -1,7 +1,7 @@
 package api.domain.report.converter;
 
-import api.domain.admin.controller.model.response.ReportDetailResponse;
-import api.domain.admin.controller.model.response.ReportListResponse;
+import api.domain.report.controller.model.ReportDetailResponse;
+import api.domain.report.controller.model.ReportSimpleResponse;
 import api.domain.report.controller.model.ReportRequest;
 import db.domain.report.ReportDocument;
 import global.annotation.Converter;
@@ -23,15 +23,15 @@ public class ReportConverter {
     }
 
 
-    public ReportListResponse toResponse(ReportDocument reportDocument) {
-        return ReportListResponse.builder()
+    public ReportSimpleResponse toResponse(ReportDocument reportDocument) {
+        return ReportSimpleResponse.builder()
             .reportId(reportDocument.getId())
             .content(reportDocument.getContent())
             .registeredAt(reportDocument.getRegisteredAt())
             .build();
     }
 
-    public List<ReportListResponse> toListResponse(List<ReportDocument> reportDocumentList) {
+    public List<ReportSimpleResponse> toListResponse(List<ReportDocument> reportDocumentList) {
         return reportDocumentList.stream()
             .map(this::toResponse)
             .toList();

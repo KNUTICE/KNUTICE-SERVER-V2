@@ -1,11 +1,11 @@
 package api.domain.notice.converter;
 
-import api.domain.admin.controller.model.request.NoticeSaveRequest;
-import api.domain.admin.controller.model.request.NoticeUpdateRequest;
-import api.domain.notice.controller.model.latestnotice.LatestThreeNoticeResponse;
-import api.domain.notice.controller.model.noticelist.NoticeRequest;
-import api.domain.notice.controller.model.noticelist.NoticeResponse;
-import api.domain.notice.controller.model.search.NoticeSearchRequest;
+import api.domain.notice.controller.model.request.NoticeSaveRequest;
+import api.domain.notice.controller.model.request.NoticeUpdateRequest;
+import api.domain.notice.controller.model.response.LatestThreeNoticeResponse;
+import api.domain.notice.controller.model.request.NoticeRequest;
+import api.domain.notice.controller.model.response.NoticeResponse;
+import api.domain.notice.controller.model.request.NoticeSearchRequest;
 import db.domain.notice.NoticeDocument;
 import db.domain.notice.dto.QNoticeDto;
 import db.domain.notice.dto.QNoticeSearchDto;

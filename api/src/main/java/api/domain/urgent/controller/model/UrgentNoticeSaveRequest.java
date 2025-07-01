@@ -1,4 +1,4 @@
-package api.domain.admin.controller.model.request;
+package api.domain.urgent.controller.model;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
