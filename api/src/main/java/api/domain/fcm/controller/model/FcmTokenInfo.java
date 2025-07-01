@@ -1,4 +1,4 @@
-package api.domain.admin.controller.model.response;
+package api.domain.fcm.controller.model;
 
 import java.time.LocalDateTime;
 import lombok.Builder;
@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class FcmTokenInfoList {
+public class FcmTokenInfo {
 
     private String fcmToken;
 

@@ -1,4 +1,4 @@
-package api.domain.admin.controller.model.request;
+package api.domain.notice.controller.model.request;
 
 import global.utils.NoticeMapper;
 import jakarta.validation.constraints.NotBlank;
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class NoticeUpdateRequest {
+public class NoticeSaveRequest {
 
     @NotNull
     private Long nttId;

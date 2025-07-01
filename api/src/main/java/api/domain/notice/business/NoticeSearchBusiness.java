@@ -1,7 +1,7 @@
 package api.domain.notice.business;
 
-import api.domain.notice.controller.model.noticelist.NoticeResponse;
-import api.domain.notice.controller.model.search.NoticeSearchRequest;
+import api.domain.notice.controller.model.response.NoticeResponse;
+import api.domain.notice.controller.model.request.NoticeSearchRequest;
 import api.domain.notice.converter.NoticeConverter;
 import api.domain.notice.service.NoticeService;
 import db.domain.notice.NoticeDocument;

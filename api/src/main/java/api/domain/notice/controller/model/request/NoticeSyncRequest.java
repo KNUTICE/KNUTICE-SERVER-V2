@@ -1,4 +1,4 @@
-package api.domain.notice.controller.model.sync;
+package api.domain.notice.controller.model.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;

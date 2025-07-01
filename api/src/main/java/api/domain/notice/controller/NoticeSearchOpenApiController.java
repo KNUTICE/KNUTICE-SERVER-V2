@@ -1,8 +1,8 @@
 package api.domain.notice.controller;
 
 import api.domain.notice.business.NoticeSearchBusiness;
-import api.domain.notice.controller.model.noticelist.NoticeResponse;
-import api.domain.notice.controller.model.search.NoticeSearchRequest;
+import api.domain.notice.controller.model.response.NoticeResponse;
+import api.domain.notice.controller.model.request.NoticeSearchRequest;
 import global.api.Api;
 import jakarta.validation.Valid;
 import java.util.List;

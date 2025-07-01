@@ -1,4 +1,4 @@
-package api.domain.notice.controller.model.noticelist;
+package api.domain.notice.controller.model.request;
 
 import global.utils.NoticeMapper;
 import jakarta.validation.constraints.NotNull;

@@ -1,11 +1,13 @@
 package api.domain.fcm.business;
 
+import api.domain.fcm.controller.model.FcmTokenInfo;
 import api.domain.fcm.controller.model.FcmTokenRequest;
 import api.domain.fcm.converter.FcmTokenConverter;
 import api.domain.fcm.service.FcmTokenService;
 import db.domain.token.fcm.FcmTokenDocument;
 import global.annotation.Business;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +37,15 @@ public class FcmTokenBusiness {
             FcmTokenDocument newFcmTokenDocument = fcmTokenConverter.toDocument(fcmTokenRequest);
             return fcmTokenService.saveFcmToken(newFcmTokenDocument);
         }
+    }
+
+    /**
+     * 관리자가 사용자의 모든 토큰을 조회할 때 사용
+     * @return 사용자 토큰 목록
+     */
+    public List<FcmTokenInfo> getFcmTokenList() {
+        List<FcmTokenDocument> fcmTokenDocumentList = fcmTokenService.getFcmTokenList();
+        return fcmTokenConverter.toListResponse(fcmTokenDocumentList);
     }
 
 }

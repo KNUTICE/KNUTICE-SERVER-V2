@@ -1,4 +1,4 @@
-package api.domain.admin.controller.model.response;
+package api.domain.report.controller.model;
 
 import db.domain.report.enums.ClientType;
 import java.time.LocalDateTime;

@@ -1,6 +1,5 @@
-package api.domain.notice.controller.model.latestnotice;
+package api.domain.notice.controller.model.response;
 
-import api.domain.notice.controller.model.noticelist.NoticeResponse;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

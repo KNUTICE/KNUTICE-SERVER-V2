@@ -1,6 +1,6 @@
 package api.domain.urgent.converter;
 
-import api.domain.admin.controller.model.request.UrgentNoticeSaveRequest;
+import api.domain.urgent.controller.model.UrgentNoticeSaveRequest;
 import api.domain.urgent.controller.model.UrgentNoticeResponse;
 import db.domain.urgent.UrgentNoticeDocument;
 import global.annotation.Converter;
