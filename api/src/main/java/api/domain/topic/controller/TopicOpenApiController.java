@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/open-api/topic")
+@RequestMapping({"/open-api/topic", "/open-api/topics"})
 public class TopicOpenApiController {
 
     private final TopicBusiness topicBusiness;
 
-    @PostMapping()
+    @PostMapping({"", "/subscription"})
     public Api<Boolean> manageTopic(
         @RequestBody @Valid Api<TopicSubscriptionRequest> topicSubscriptionRequest
     ) {
@@ -28,7 +28,7 @@ public class TopicOpenApiController {
         return Api.OK(response);
     }
 
-    @GetMapping()
+    @GetMapping({"", "/status"})
     public Api<TopicStatusResponse> getTopicStatus(@RequestHeader String fcmToken) {
         return Api.OK(topicBusiness.getTopicStatusBy(fcmToken));
     }

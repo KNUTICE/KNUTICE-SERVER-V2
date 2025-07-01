@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/open-api/report")
+@RequestMapping({"/open-api/report", "/open-api/reports"})
 public class ReportOpenApiController {
 
     private final ReportBusiness reportBusiness;
