@@ -3,10 +3,8 @@ package api.domain.image.service;
 import api.common.error.ImageErrorCode;
 import api.common.exception.image.ImageStorageDirectoryCreationException;
 import api.common.exception.image.ImageStorageWriteException;
-import api.common.exception.image.InvalidImageExtensionException;
 import api.domain.image.utils.FileUtils;
 import db.domain.image.ImageDocument;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -28,18 +27,18 @@ public class LocalImageStorageService {
     private String directoryPath;
 
     @Async
-    public CompletableFuture<Path> storeImageAsync(byte[] imageData, String originalFilename) {
+    public CompletableFuture<Path> storeImageAsync(MultipartFile file) {
         createDirectoryIfNotExists(directoryPath);
-        Path imagePath = createImagePath(originalFilename);
-        storeImage(imageData, imagePath);
+        Path imagePath = createImagePath(file.getOriginalFilename());
+        storeImage(file, imagePath);
         return CompletableFuture.completedFuture(imagePath);
     }
 
     @Async
-    public CompletableFuture<Path> replaceImageAsync(byte[] imageData, String existingFilename) {
+    public CompletableFuture<Path> replaceImageAsync(MultipartFile file, String existingFilename) {
         createDirectoryIfNotExists(directoryPath);
         Path imagePath = Paths.get(directoryPath, existingFilename);
-        storeImage(imageData, imagePath);
+        storeImage(file, imagePath);
         return CompletableFuture.completedFuture(imagePath);
     }
 
@@ -54,9 +53,9 @@ public class LocalImageStorageService {
         }
     }
 
-    private void storeImage(byte[] imageData, Path imagePath) {
+    private void storeImage(MultipartFile file, Path imagePath) {
         try {
-            Files.copy(new ByteArrayInputStream(imageData), imagePath, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
             log.info("이미지를 저장하는 데 성공했습니다: {}", imagePath);
         } catch (IOException e) {
             log.error("이미지를 저장하는 데 실패했습니다: {}", imagePath, e);
@@ -74,11 +73,6 @@ public class LocalImageStorageService {
 
     private Path createImagePath(String originalFilename) {
         String extension = FileUtils.getExtension(originalFilename);
-
-        if (!FileUtils.ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
-            log.error("허용되지 않은 이미지 확장자입니다.");
-            throw new InvalidImageExtensionException(ImageErrorCode.INVALID_EXTENSION);
-        }
 
         String serverName = UUID.randomUUID().toString();
         return Paths.get(directoryPath, serverName + extension);
