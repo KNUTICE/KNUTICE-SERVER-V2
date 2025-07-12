@@ -2,8 +2,11 @@ package api.domain.image.utils;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
@@ -29,8 +32,19 @@ public class FileUtils {
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
+    // 확장자를 제외한 순수 파일 이름
     public static String getFileOfName(String fileName) {
         return fileName.substring(0, fileName.lastIndexOf("."));
+    }
+
+    // 확장자를 제외한 순수 파일 이름
+    public static String getFileOfName(MultipartFile multipartFile) {
+        String originalFileName = FileUtils.getOriginalFileName(multipartFile);
+        return originalFileName.substring(0, originalFileName.lastIndexOf("."));
+    }
+
+    public static String getOriginalFileName(MultipartFile multipartFile) {
+        return StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
     }
 
     public String createImageUrl(Path filePath) {

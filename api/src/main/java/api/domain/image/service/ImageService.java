@@ -6,6 +6,7 @@ import db.domain.image.enums.ImageKind;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,7 +15,8 @@ public class ImageService {
 
     private final ImageMongoRepository imageMongoRepository;
 
-    public void saveImageMetaData(ImageDocument imageDocument) {
+    @Async
+    public void saveImageMetaDataAsync(ImageDocument imageDocument) {
         imageMongoRepository.save(imageDocument);
     }
 

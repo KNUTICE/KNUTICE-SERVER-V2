@@ -20,12 +20,11 @@ public class ImageApiController {
     private final ImageBusiness imageBusiness;
 
     @PostMapping()
-    public Api<Boolean> uploadImage(
+    public Api<String> uploadImage(
         @RequestPart("image") MultipartFile multipartFile,
         @RequestParam ImageKind imageKind
     ) {
-        imageBusiness.uploadImage(multipartFile, imageKind);
-        return Api.OK(true);
+        return Api.OK(imageBusiness.uploadImage(multipartFile, imageKind));
     }
 
     @DeleteMapping()
