@@ -9,6 +9,7 @@ import api.domain.fcm.service.FcmTokenService;
 import api.domain.report.controller.model.ReportRequest;
 import api.domain.report.converter.ReportConverter;
 import api.domain.report.service.ReportService;
+import api.domain.report.service.SlackService;
 import db.domain.report.ReportDocument;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,9 @@ class ReportBusinessTest {
 
     @Mock
     private ReportConverter reportConverter;
+
+    @Mock
+    private SlackService slackService;
 
     @InjectMocks
     private ReportBusiness reportBusiness;
