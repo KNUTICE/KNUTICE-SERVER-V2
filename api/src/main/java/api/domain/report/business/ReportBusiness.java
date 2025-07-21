@@ -8,6 +8,7 @@ import api.domain.fcm.service.FcmTokenService;
 import api.domain.report.controller.model.ReportRequest;
 import api.domain.report.converter.ReportConverter;
 import api.domain.report.service.ReportService;
+import api.domain.report.service.SlackService;
 import db.domain.report.ReportDocument;
 import global.annotation.Business;
 import java.util.List;
@@ -19,6 +20,7 @@ public class ReportBusiness {
 
     private final ReportService reportService;
     private final FcmTokenService fcmTokenService;
+    private final SlackService slackService;
 
     private final ReportConverter reportConverter;
 
@@ -31,6 +33,7 @@ public class ReportBusiness {
         }
 
         ReportDocument reportDocument = reportConverter.toDocument(reportRequest);
+        slackService.sendReportNotificationAsync(reportDocument);
         return reportService.submitReport(reportDocument);
     }
 
