@@ -7,7 +7,6 @@ import db.domain.image.enums.ImageKind;
 import global.annotation.Converter;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
