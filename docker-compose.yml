@@ -1,0 +1,38 @@
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
+    image: ${DOCKER_API_IMAGE_NAME}
+    container_name: knutice-api
+    ports:
+      - 80:8001
+    networks:
+      - app-network
+    environment:
+      - LOG_PATH=/logs
+      - TZ=Asia/Seoul
+    volumes:
+      - /home/ubuntu/logs/api:/logs
+      - /home/ubuntu/knutice/images:/images
+
+  crawler:
+    build:
+      context: .
+      dockerfile: ./crawler/Dockerfile
+    image: ${DOCKER_CRAWLER_IMAGE_NAME}
+    container_name: knutice-crawler
+    ports:
+      - 8002:8002
+    networks:
+      - app-network
+    environment:
+      - LOG_PATH=/logs
+      - TZ=Asia/Seoul
+    volumes:
+      - /home/ubuntu/logs/crawler:/logs
+
+networks:
+  app-network:
+    external: true
