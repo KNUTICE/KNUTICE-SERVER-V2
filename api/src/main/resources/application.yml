@@ -26,12 +26,15 @@ url:
   scheme: ${URL_SCHEME}
   host: ${URL_HOST}
 
+webhook:
+  slack:
+    url: ${WEBHOOK_SLACK_URL}
+
 logging:
   level:
     org:
       springframework.web: DEBUG
       hibernate: INFO
-
 
 management:
   endpoints:

@@ -30,6 +30,9 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
+    // Slack
+    implementation("com.slack.api:slack-api-client:1.45.3")
+
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
