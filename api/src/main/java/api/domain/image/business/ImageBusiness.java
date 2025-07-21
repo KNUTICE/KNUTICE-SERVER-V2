@@ -2,7 +2,6 @@ package api.domain.image.business;
 
 import api.common.error.ImageErrorCode;
 import api.common.exception.image.ImageNotFoundException;
-import api.common.exception.image.ImageStorageWriteException;
 import api.common.exception.image.InvalidImageExtensionException;
 import api.domain.image.controller.model.ImageResponse;
 import api.domain.image.converter.ImageConverter;
@@ -30,10 +29,10 @@ public class ImageBusiness {
 
     /**
      * DEFAULT_IMAGE 는 하나만 존재 → 있으면 교체, 없으면 새로 저장 <br>
+     * DEFAULT_IMAGE 의 서버 파일 이름은 **default.확장자** 로 제한한다. -> storeDefaultImage 에서 이름 지정 <br>
      * TIP_IMAGE 등은 단순 저장
      */
     public String uploadImage(MultipartFile multipartFile, ImageKind imageKind) {
-
         if (multipartFile.isEmpty()) {
             throw new ImageNotFoundException(ImageErrorCode.IMAGE_NOT_FOUND);
         }
@@ -46,51 +45,33 @@ public class ImageBusiness {
             throw new InvalidImageExtensionException(ImageErrorCode.INVALID_EXTENSION);
         }
 
-        try {
-            if (imageKind == ImageKind.DEFAULT_IMAGE) {
-                return handleDefaultImageUpload(multipartFile, originalFilename, extension);
-            } else {
-                return uploadNewImage(multipartFile, imageKind);
-            }
-        } catch (Exception e) {
-            log.error("이미지 업로드 실패");
-            throw new ImageStorageWriteException(ImageErrorCode.IMAGE_STORAGE_FAILED);
+        if (imageKind == ImageKind.DEFAULT_IMAGE) {
+            return imageService.getImageByKind(ImageKind.DEFAULT_IMAGE).map(existingImage -> {
+
+                if (!existingImage.getExtension().equals(extension)) {
+                    imageService.deleteImageMetaData(existingImage);
+                    localImageStorageService.deleteImageAsync(existingImage.getServerName(), existingImage.getExtension());
+                }
+
+                existingImage.setOriginalName(FileUtils.getFileOfName(originalFilename));
+                existingImage.setExtension(extension);
+                existingImage.setImageUrl(fileUtils.createImageUrl(Path.of(localImageStorageService.DEFAULT_IMAGE_NAME + extension)));
+
+                imageService.saveImageMetaDataAsync(existingImage);
+                localImageStorageService.storeDefaultImage(multipartFile);
+                return existingImage.getImageUrl();
+            }).orElseGet(() -> {
+
+                Path savedPath = localImageStorageService.storeDefaultImage(multipartFile);
+
+                ImageDocument document = imageConverter.toDocument(multipartFile,
+                    ImageKind.DEFAULT_IMAGE, savedPath);
+                imageService.saveImageMetaDataAsync(document);
+                return document.getImageUrl();
+            });
         }
 
-    }
-
-    private String handleDefaultImageUpload(MultipartFile multipartFile, String originalFilename,
-        String extension) {
-        return imageService.getImageByKind(ImageKind.DEFAULT_IMAGE)
-            .map(existingImage ->
-                replaceExistingDefaultImage(multipartFile, existingImage, originalFilename, extension))
-            .orElseGet(() ->
-                uploadNewImage(multipartFile, ImageKind.DEFAULT_IMAGE)
-            );
-    }
-
-    private String replaceExistingDefaultImage(MultipartFile multipartFile,
-        ImageDocument existingImage, String originalFilename, String extension) {
-        String replaceFilename = existingImage.getServerName() + extension;
-
-        if (!existingImage.getExtension().equals(extension)) {
-            localImageStorageService.deleteImageAsync(existingImage);
-        }
-
-        // 파일 저장
-        localImageStorageService.replaceImageAsync(multipartFile, replaceFilename).join();
-
-        // 메타데이터 갱신
-        existingImage.setOriginalName(FileUtils.getFileOfName(originalFilename));
-        existingImage.setExtension(extension);
-        existingImage.setImageUrl(fileUtils.createImageUrl(Path.of(replaceFilename)));
-
-        imageService.saveImageMetaDataAsync(existingImage);
-        return existingImage.getImageUrl();
-    }
-
-    private String uploadNewImage(MultipartFile multipartFile, ImageKind imageKind) {
-        Path savedPath = localImageStorageService.storeImageAsync(multipartFile).join();
+        Path savedPath = localImageStorageService.storeImage(multipartFile);
         ImageDocument document = imageConverter.toDocument(multipartFile, imageKind, savedPath);
         imageService.saveImageMetaDataAsync(document);
         return document.getImageUrl();
@@ -107,7 +88,7 @@ public class ImageBusiness {
     public void deleteImage(String imageId) {
         imageService.getImageBy(imageId).ifPresentOrElse(imageDocument -> {
             localImageStorageService.deleteImageAsync(imageDocument);
-            imageService.deleteImageBy(imageDocument.getId());
+            imageService.deleteImageMetaData(imageDocument);
         }, () -> {
             throw new ImageNotFoundException(ImageErrorCode.IMAGE_NOT_FOUND);
         });
