@@ -1,0 +1,17 @@
+name: 'Common Setup'
+description: 'checkout + doppler + JDK'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install Doppler CLI
+      uses: dopplerhq/cli-action@v3
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'

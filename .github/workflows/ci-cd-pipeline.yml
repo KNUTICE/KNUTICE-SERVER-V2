@@ -7,28 +7,16 @@ on:
 
 jobs:
   build:
-    name: Build & Test
+    name: Test Gradle
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     environment: PRD
     env:
       DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PRD }}
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: ./.github/actions/common
 
-      - name: Install Doppler CLI
-        uses: dopplerhq/cli-action@v3
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Build with Gradle
-        run: doppler run -- ./gradlew build
+      - name: Run Tests
+        run: doppler run -- ./gradlew test
 
   docker:
     name: Build & Push Docker Images
@@ -38,11 +26,7 @@ jobs:
     env:
       DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PRD }}
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Install Doppler CLI
-        uses: dopplerhq/cli-action@v3
+      - uses: ./.github/actions/common
 
       - name: Docker Hub Login
         uses: docker/login-action@v3
@@ -55,7 +39,10 @@ jobs:
           mkdir -p crawler/src/main/resources/firebase
           echo "${{ secrets.FIREBASE_SERVICE_KEY }}" > crawler/src/main/resources/firebase/firebase_service_key.json
 
-      - name: Build & Push
+      - name: Build JARs
+        run: doppler run -- ./gradlew clean :api:bootJar :crawler:bootJar
+
+      - name: Build & Push Docker Images
         run: |
           doppler run -- docker compose build
           doppler run -- docker compose push
