@@ -11,10 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
+    environment: PRD
+    env:
+      DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PRD }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -23,16 +28,15 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: doppler run -- ./gradlew build
 
-  deploy:
-    name: Deploy to Production
+  docker:
+    name: Build & Push Docker Images
     runs-on: ubuntu-latest
     needs: build
     environment: PRD
     env:
       DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PRD }}
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -51,12 +55,20 @@ jobs:
           mkdir -p crawler/src/main/resources/firebase
           echo "${{ secrets.FIREBASE_SERVICE_KEY }}" > crawler/src/main/resources/firebase/firebase_service_key.json
 
-      - name: Build & Push Docker Images
+      - name: Build & Push
         run: |
           doppler run -- docker compose build
           doppler run -- docker compose push
 
-      - name: Deploy on Server
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+    needs: docker
+    environment: PRD
+    env:
+      DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PRD }}
+    steps:
+      - name: Deploy over SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_IP }}
@@ -66,15 +78,15 @@ jobs:
           script: |
             cd /home/ubuntu
             
-            export DOPPLER_TOKEN=${{ secrets.DOPPLER_TOKEN_PRD }}            
+            export DOPPLER_TOKEN=${{ secrets.DOPPLER_TOKEN_PRD }}
             
             if [ -d KNUTICE-SERVER-V2 ]; then rm -rf KNUTICE-SERVER-V2; fi
             git clone https://github.com/KNUTICE/KNUTICE-SERVER-V2.git
-           
+            
             cd KNUTICE-SERVER-V2
             doppler run -- docker compose pull
             doppler run -- docker compose up -d
             docker image prune -f
-           
+            
             cd ..
             rm -rf KNUTICE-SERVER-V2
