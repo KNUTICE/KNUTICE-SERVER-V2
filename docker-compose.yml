@@ -1,5 +1,4 @@
 services:
-
   api:
     build:
       context: .
@@ -7,10 +6,22 @@ services:
     image: ${DOCKER_API_IMAGE_NAME}
     container_name: knutice-api
     ports:
-      - 80:8001
+      - 80:${API_PORT}
     networks:
       - app-network
     environment:
+      - API_PORT
+      - MONGO_URI
+      - MONGO_DATABASE
+      - JWT_SECRET_KEY
+      - JWT_ACCESS_PLUS_HOUR
+      - JWT_REFRESH_PLUS_HOUR
+      - FILE_UPLOAD_DIR
+      - FILE_CONTEXT_PATH
+      - URL_SCHEME
+      - URL_HOST
+      - WEBHOOK_SLACK_URL
+      - CRAWLER_SERVER_ADDRESS
       - LOG_PATH=/logs
       - TZ=Asia/Seoul
     volumes:
@@ -24,10 +35,14 @@ services:
     image: ${DOCKER_CRAWLER_IMAGE_NAME}
     container_name: knutice-crawler
     ports:
-      - 8002:8002
+      - ${CRAWLER_PORT}:${CRAWLER_PORT}
     networks:
       - app-network
     environment:
+      - CRAWLER_PORT
+      - MONGO_URI
+      - MONGO_DATABASE
+      - FIREBASE_KEY_PATH
       - LOG_PATH=/logs
       - TZ=Asia/Seoul
     volumes:
