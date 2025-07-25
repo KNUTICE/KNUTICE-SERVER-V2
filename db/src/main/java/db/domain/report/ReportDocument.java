@@ -1,6 +1,6 @@
 package db.domain.report;
 
-import db.domain.report.enums.ClientType;
+import global.utils.DeviceType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +23,7 @@ public class ReportDocument {
 
     private String content;
 
-    private ClientType clientType;
+    private DeviceType clientType;
 
     private String deviceName;
 
