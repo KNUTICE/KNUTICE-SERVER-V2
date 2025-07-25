@@ -8,7 +8,10 @@ import lombok.Getter;
 public enum DeviceType {
 
     iOS("iOS"),
-    AOS("Android")
+    AOS("Android"),
+
+    WEB("웹"),
+    APP("앱")
     ;
 
     private final String description;

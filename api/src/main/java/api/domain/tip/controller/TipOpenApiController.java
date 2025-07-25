@@ -19,7 +19,7 @@ public class TipOpenApiController {
     private final TipBusiness tipBusiness;
 
     @GetMapping
-    public Api<List<TipResponse>> getTips(@RequestParam DeviceType deviceType) {
+    public Api<List<TipResponse>> getTips(@RequestParam(defaultValue = "iOS") DeviceType deviceType) {
         return Api.OK(tipBusiness.getTipsBy(deviceType));
     }
 

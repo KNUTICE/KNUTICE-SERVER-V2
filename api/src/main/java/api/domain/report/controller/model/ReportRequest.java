@@ -1,6 +1,6 @@
 package api.domain.report.controller.model;
 
-import db.domain.report.enums.ClientType;
+import global.utils.DeviceType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,7 +20,7 @@ public class ReportRequest {
     private String content;
 
     @NotNull
-    private ClientType clientType;
+    private DeviceType clientType;
 
     @Size(max = 50)
     private String deviceName;

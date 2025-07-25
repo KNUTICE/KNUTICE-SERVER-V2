@@ -1,6 +1,6 @@
 package api.domain.report.controller.model;
 
-import db.domain.report.enums.ClientType;
+import global.utils.DeviceType;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +15,7 @@ public class ReportDetailResponse {
 
     private String content;
 
-    private ClientType clientType;
+    private DeviceType clientType;
 
     private String deviceName;
 
