@@ -16,10 +16,11 @@ public class FcmMessageGenerator {
 
     public List<MessageWithFcmToken> generateMessageBuilderList(
         FcmDto fcmDto,
-        List<String> fcmTokenList
+        List<String> fcmTokenList,
+        boolean silentPush
     ) {
         return fcmTokenList.stream()
-            .map(token -> new MessageWithFcmToken(messageFactory.createMessage(fcmDto, token), token))
+            .map(token -> new MessageWithFcmToken(messageFactory.createMessage(fcmDto, token, silentPush), token))
             .collect(Collectors.toList());
     }
 

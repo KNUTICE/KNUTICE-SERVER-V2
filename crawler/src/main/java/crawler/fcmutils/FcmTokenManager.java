@@ -35,7 +35,7 @@ public class FcmTokenManager {
             }
         }
 
-        deleteTokens(tokenListToDelete);
+//        deleteTokens(tokenListToDelete);
         updateTokens(updateTokenList);
 
     }

@@ -51,10 +51,10 @@ public class FcmService {
             .map(FcmTokenDocument::getFcmToken)
             .toList();
 
-        batchSend(fcmDto, deviceTokenList);
+        batchSend(fcmDto, deviceTokenList, false);
     }
 
-    public void batchSend(FcmDto fcmDto, List<String> deviceTokenList) {
+    public void batchSend(FcmDto fcmDto, List<String> deviceTokenList, boolean silentPush) {
 
         if (deviceTokenList.isEmpty()) {
             log.warn("해당 주제를 구독한 사용자가 없습니다.");
@@ -62,7 +62,7 @@ public class FcmService {
         }
 
         List<MessageWithFcmToken> messageWithTokenList = fcmMessageGenerator.generateMessageBuilderList(
-            fcmDto, deviceTokenList);
+            fcmDto, deviceTokenList, silentPush);
 
         int tokenSize = (int) Math.ceil((double) messageWithTokenList.size() / 500);
 

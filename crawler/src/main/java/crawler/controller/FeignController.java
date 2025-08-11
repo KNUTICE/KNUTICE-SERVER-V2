@@ -17,7 +17,12 @@ public class FeignController {
 
     @PostMapping("/message")
     public void sendMessage(@RequestParam String fcmToken, @RequestBody FcmDto fcmDto) {
-        fcmService.batchSend(fcmDto, List.of(fcmToken));
+        fcmService.batchSend(fcmDto, List.of(fcmToken), false);
+    }
+
+    @PostMapping("/message/silent-push")
+    public void sendSilentPush(@RequestParam String fcmToken, @RequestBody FcmDto fcmDto) {
+        fcmService.batchSend(fcmDto, List.of(fcmToken), true);
     }
 
 }
