@@ -7,17 +7,29 @@ import crawler.service.model.FcmDto;
 
 public class ApnsConfigFactory {
 
-    public static ApnsConfig createApnsConfig(FcmDto fcmDto) {
-        return ApnsConfig.builder()
-            .putHeader("apns-priority", "10")
-            .setAps(Aps.builder()
-                .setMutableContent(true)
-                .setAlert(ApsAlert.builder()
-                    .setLaunchImage(fcmDto.getContentImage())
-                    .build())
-                .setSound("default")
-                .build()
-            ).build();
-    }
+    public static ApnsConfig createApnsConfig(FcmDto fcmDto, boolean silentPush) {
 
+        ApnsConfig.Builder apnsBuilder = ApnsConfig.builder();
+
+        if (silentPush) {
+            apnsBuilder
+                .putHeader("apns-priority", "5")
+                .putHeader("apns-push-type", "background")
+                .setAps(Aps.builder()
+                    .setContentAvailable(true)
+                    .setMutableContent(true)
+                    .build());
+        } else {
+            apnsBuilder
+                .putHeader("apns-priority", "10")
+                .setAps(Aps.builder()
+                    .setMutableContent(true)
+                    .setAlert(ApsAlert.builder()
+                        .setLaunchImage(fcmDto.getContentImage())
+                        .build())
+                    .setSound("default")
+                    .build());
+        }
+        return apnsBuilder.build();
+    }
 }

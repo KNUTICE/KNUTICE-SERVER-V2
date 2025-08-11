@@ -7,13 +7,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class MessageFactory {
 
-    public Message createMessage(FcmDto fcmDto, String token) {
+    public Message createMessage(FcmDto fcmDto, String token, boolean silentPush) {
         return Message.builder()
             .setToken(token)
             .putAllData(DataMapFactory.createDataMap(fcmDto))
             .setNotification(NotificationFactory.createNotification(fcmDto))
             .setAndroidConfig(AndroidConfigFactory.createAndroidConfig(fcmDto))
-            .setApnsConfig(ApnsConfigFactory.createApnsConfig(fcmDto))
+            .setApnsConfig(ApnsConfigFactory.createApnsConfig(fcmDto, silentPush))
             .build();
 
     }
