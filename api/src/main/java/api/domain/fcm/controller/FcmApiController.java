@@ -34,4 +34,11 @@ public class FcmApiController {
         return Api.OK(true);
     }
 
+    @PostMapping("/message/silent-push")
+    public Api<Boolean> sendSilentPush(@RequestBody @Valid Api<FcmRequest> request) {
+        crawlerClient.sendSilentPush(request.getBody().getFcmToken(), request.getBody());
+        return Api.OK(true);
+    }
+
+
 }
