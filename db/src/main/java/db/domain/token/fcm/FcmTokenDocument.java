@@ -1,5 +1,6 @@
 package db.domain.token.fcm;
 
+import global.utils.DeviceType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,7 +40,9 @@ public class FcmTokenDocument {
     @Builder.Default
     private int failedCount = 0;
 
-    public void copyTopicsAndStatusFrom(FcmTokenDocument tokenDocument) {
+    private DeviceType deviceType;
+
+    public void copyTopicsAndStatusFrom(FcmTokenDocument tokenDocument, DeviceType deviceType) {
         this.generalNewsTopic = tokenDocument.generalNewsTopic;
         this.scholarshipNewsTopic = tokenDocument.scholarshipNewsTopic;
         this.eventNewsTopic = tokenDocument.eventNewsTopic;
@@ -47,6 +50,7 @@ public class FcmTokenDocument {
         this.employmentNewsTopic = tokenDocument.employmentNewsTopic;
         this.registeredAt = LocalDateTime.now();
         this.failedCount = 0;
+        this.deviceType = tokenDocument.getDeviceType() == null ? deviceType : this.deviceType;
     }
 
 }
