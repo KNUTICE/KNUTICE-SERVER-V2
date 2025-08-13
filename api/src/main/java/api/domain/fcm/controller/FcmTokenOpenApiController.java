@@ -33,7 +33,7 @@ public class FcmTokenOpenApiController {
     public Api<Boolean> updateFcmToken(
         @RequestBody @Valid Api<FcmTokenUpdateRequest> fcmTokenUpdateRequest
     ) {
-        log.info("silentPush - [old : {}] - [new : {}]",
+        log.info("token update - [old : {}] - [new : {}]",
             fcmTokenUpdateRequest.getBody().getOldFcmToken(),
             fcmTokenUpdateRequest.getBody().getNewFcmToken());
         return Api.OK(fcmTokenBusiness.updateFcmToken(fcmTokenUpdateRequest.getBody()));
