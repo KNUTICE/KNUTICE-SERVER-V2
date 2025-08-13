@@ -14,6 +14,7 @@ public class FcmTokenConverter {
         return FcmTokenDocument.builder()
             .fcmToken(fcmTokenRequest.getFcmToken())
             .registeredAt(LocalDateTime.now())
+            .deviceType(fcmTokenRequest.getDeviceType())
             .build();
     }
 

@@ -34,6 +34,11 @@ public class FcmTokenBusiness {
             FcmTokenDocument existsFcmTokenDocument = fcmTokenDocument.get();
             existsFcmTokenDocument.setRegisteredAt(LocalDateTime.now());
             existsFcmTokenDocument.setFailedCount(0);
+            existsFcmTokenDocument.setDeviceType(
+                fcmTokenRequest.getDeviceType() != null
+                    ? fcmTokenRequest.getDeviceType()
+                    : existsFcmTokenDocument.getDeviceType()
+            );
             return fcmTokenService.saveFcmToken(existsFcmTokenDocument);
         } else { // @Builder.Default 를 지정했기 때문에, set() 할 필요 없음
             FcmTokenDocument newFcmTokenDocument = fcmTokenConverter.toDocument(fcmTokenRequest);
@@ -52,7 +57,7 @@ public class FcmTokenBusiness {
 
         // 동일 토큰이면 서버 저장
         if (oldToken.equals(newToken)) {
-            this.saveFcmToken(new FcmTokenRequest(newToken));
+            this.saveFcmToken(new FcmTokenRequest(newToken, fcmTokenUpdateRequest.getDeviceType()));
             return true;
         }
 
@@ -60,7 +65,7 @@ public class FcmTokenBusiness {
         var oldTokenOptional = fcmTokenService.getFcmToken(oldToken);
         if (oldTokenOptional.isEmpty()) {
             // oldToken 이 없는 경우 newToken 저장
-            return this.saveFcmToken(new FcmTokenRequest(newToken));
+            return this.saveFcmToken(new FcmTokenRequest(newToken, fcmTokenUpdateRequest.getDeviceType()));
         }
 
         var oldFcmTokenDocument = oldTokenOptional.get();
@@ -70,11 +75,11 @@ public class FcmTokenBusiness {
 
         // newToken 이 존재하지 않으면 저장할 새 Document 생성
         FcmTokenDocument newFcmTokenDocument = newTokenDocumentOptional.orElseGet(() ->
-            fcmTokenConverter.toDocument(new FcmTokenRequest(newToken))
+            fcmTokenConverter.toDocument(new FcmTokenRequest(newToken, fcmTokenUpdateRequest.getDeviceType()))
         );
 
         // oldToken 의 토픽 및 상태값 복사
-        newFcmTokenDocument.copyTopicsAndStatusFrom(oldFcmTokenDocument);
+        newFcmTokenDocument.copyTopicsAndStatusFrom(oldFcmTokenDocument, fcmTokenUpdateRequest.getDeviceType());
 
         fcmTokenService.saveFcmToken(newFcmTokenDocument);
         fcmTokenService.deleteBy(oldToken);
