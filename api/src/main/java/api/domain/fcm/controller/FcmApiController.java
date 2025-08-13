@@ -8,12 +8,15 @@ import global.api.Api;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/fcm")
@@ -35,10 +38,9 @@ public class FcmApiController {
     }
 
     @PostMapping("/message/silent-push")
-    public Api<Boolean> sendSilentPush(@RequestBody @Valid Api<FcmRequest> request) {
-        crawlerClient.sendSilentPush(request.getBody().getFcmToken(), request.getBody());
+    public Api<Boolean> sendSilentPush(@RequestParam String fcmToken) {
+        crawlerClient.sendSilentPush(fcmToken);
         return Api.OK(true);
     }
-
 
 }
