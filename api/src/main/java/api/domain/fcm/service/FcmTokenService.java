@@ -38,4 +38,9 @@ public class FcmTokenService {
         return fcmTokenMongoRepository.findAll();
     }
 
+    public boolean deleteBy(String fcmToken) {
+        fcmTokenMongoRepository.deleteById(fcmToken);
+        return true;
+    }
+
 }

@@ -2,11 +2,12 @@ package api.domain.fcm.controller;
 
 import api.domain.fcm.business.FcmTokenBusiness;
 import api.domain.fcm.controller.model.FcmTokenRequest;
+import api.domain.fcm.controller.model.FcmTokenUpdateRequest;
 import global.api.Api;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,14 +29,14 @@ public class FcmTokenOpenApiController {
         return Api.OK(response);
     }
 
-    @PostMapping("/open-api/fcm/tokens/silent-push")
-    public Api<Boolean> sendSilentPushFcmToken(
-        @RequestBody @Valid Api<FcmTokenRequest> fcmTokenRequest
+    @PatchMapping("/open-api/fcm/tokens")
+    public Api<Boolean> updateFcmToken(
+        @RequestBody @Valid Api<FcmTokenUpdateRequest> fcmTokenUpdateRequest
     ) {
-        log.info("Silent Push Register Date : {}", LocalDateTime.now());
-        log.info("silent-push : {}", fcmTokenRequest.getBody().getFcmToken());
-        Boolean response = fcmTokenBusiness.saveFcmToken(fcmTokenRequest.getBody());
-        return Api.OK(response);
+        log.info("silentPush - [old : {}] - [new : {}]",
+            fcmTokenUpdateRequest.getBody().getOldFcmToken(),
+            fcmTokenUpdateRequest.getBody().getNewFcmToken());
+        return Api.OK(fcmTokenBusiness.updateFcmToken(fcmTokenUpdateRequest.getBody()));
     }
 
 }

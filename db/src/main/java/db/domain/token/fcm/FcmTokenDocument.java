@@ -39,4 +39,14 @@ public class FcmTokenDocument {
     @Builder.Default
     private int failedCount = 0;
 
+    public void copyTopicsAndStatusFrom(FcmTokenDocument tokenDocument) {
+        this.generalNewsTopic = tokenDocument.generalNewsTopic;
+        this.scholarshipNewsTopic = tokenDocument.scholarshipNewsTopic;
+        this.eventNewsTopic = tokenDocument.eventNewsTopic;
+        this.academicNewsTopic = tokenDocument.academicNewsTopic;
+        this.employmentNewsTopic = tokenDocument.employmentNewsTopic;
+        this.registeredAt = LocalDateTime.now();
+        this.failedCount = 0;
+    }
+
 }
