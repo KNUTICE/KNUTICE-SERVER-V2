@@ -7,6 +7,7 @@ import api.domain.fcm.controller.model.FcmTokenRequest;
 import api.domain.fcm.converter.FcmTokenConverter;
 import api.domain.fcm.service.FcmTokenService;
 import db.domain.token.fcm.FcmTokenDocument;
+import global.utils.DeviceType;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ class FcmTokenBusinessTest {
     void 토큰_존재_저장_성공() {
         // Given
         String fcmToken = "fcmToken123";
-        FcmTokenRequest fcmTokenRequest = new FcmTokenRequest(fcmToken);
+        FcmTokenRequest fcmTokenRequest = new FcmTokenRequest(fcmToken, DeviceType.iOS);
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -60,7 +61,7 @@ class FcmTokenBusinessTest {
     void 토큰_없음_저장_성공() {
         // Given
         String fcmToken = "fcmToken123";
-        FcmTokenRequest fcmTokenRequest = new FcmTokenRequest(fcmToken);
+        FcmTokenRequest fcmTokenRequest = new FcmTokenRequest(fcmToken, DeviceType.iOS);
 
         FcmTokenDocument newFcmTokenDocument = FcmTokenDocument.builder()
             .fcmToken(fcmToken)

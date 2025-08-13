@@ -9,6 +9,7 @@ public class ApnsSilentPushFactory {
         return ApnsConfig.builder()
             .putHeader("apns-priority", "5")
             .putHeader("apns-push-type", "background")
+            .putCustomData("event", "token_update")
             .setAps(Aps.builder()
                 .setContentAvailable(true)
                 .setMutableContent(true)

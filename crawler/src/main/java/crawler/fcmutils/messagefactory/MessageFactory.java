@@ -11,14 +11,15 @@ public class MessageFactory {
         Message.Builder messageBuilder = Message.builder().setToken(token);
 
         if (silentPush) {
-            messageBuilder.setApnsConfig(ApnsSilentPushFactory.createApnsConfig());
+            messageBuilder
+                .setApnsConfig(ApnsSilentPushFactory.createApnsConfig())
+                .setNotification(NotificationFactory.createNotification(fcmDto));
         } else {
             messageBuilder
                 .putAllData(DataMapFactory.createDataMap(fcmDto))
                 .setNotification(NotificationFactory.createNotification(fcmDto))
                 .setAndroidConfig(AndroidConfigFactory.createAndroidConfig(fcmDto))
-                .setApnsConfig(ApnsConfigFactory.createApnsConfig(fcmDto))
-                .build();
+                .setApnsConfig(ApnsConfigFactory.createApnsConfig(fcmDto));
         }
 
         return messageBuilder.build();
