@@ -11,8 +11,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Business
 @RequiredArgsConstructor
 public class FcmTokenBusiness {
@@ -49,11 +51,19 @@ public class FcmTokenBusiness {
     /**
      * oldFcmToken == newFcmToken -> return
      * oldFcmToken != newFcmToken -> topic 교체
+     * oldFcmToken == null -> newFcmToken 만 저장
      */
     @Transactional
     public Boolean updateFcmToken(FcmTokenUpdateRequest fcmTokenUpdateRequest) {
-        String oldToken = fcmTokenUpdateRequest.getOldFcmToken();
+
         String newToken = fcmTokenUpdateRequest.getNewFcmToken();
+        if (fcmTokenUpdateRequest.getOldFcmToken() == null) {
+            log.info("oldToken NULL!!!! : [newFcmToken : {}]", fcmTokenUpdateRequest.getNewFcmToken());
+            this.saveFcmToken(new FcmTokenRequest(newToken, fcmTokenUpdateRequest.getDeviceType()));
+            return true;
+        }
+
+        String oldToken = fcmTokenUpdateRequest.getOldFcmToken();
 
         // 동일 토큰이면 서버 저장
         if (oldToken.equals(newToken)) {
