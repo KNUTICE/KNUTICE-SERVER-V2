@@ -15,4 +15,8 @@ public interface CrawlerClient {
     @PostMapping("/message/silent-push")
     void sendSilentPush(@RequestParam String fcmToken, @RequestBody FcmRequest fcmRequest);
 
+    @PostMapping("/message/all-silent-push")
+    void sendAllSilentPush(@RequestBody FcmRequest fcmRequest);
+
+
 }
