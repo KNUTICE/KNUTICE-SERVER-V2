@@ -43,8 +43,8 @@ public class FcmTokenBusiness {
             // 저장
         } else {
             FcmTokenSeconDocument newFcmTokenSeconDocument = FcmTokenSeconDocument.builder()
-                .createdAt(LocalDateTime.now())
                 .fcmToken(fcmTokenRequest.getFcmToken())
+                .createdAt(LocalDateTime.now())
                 .deviceType(fcmTokenRequest.getDeviceType() == null ? DeviceType.AOS : fcmTokenRequest.getDeviceType())
                 .subscribedNoticeTopics(Arrays.stream(NoticeMapper.values()).map(Enum::toString).collect(
                     Collectors.toSet()))
@@ -53,6 +53,7 @@ public class FcmTokenBusiness {
         }
     }
 
+    // SecondaryDB 연결
     /**
      * oldFcmToken == newFcmToken -> return
      * oldFcmToken != newFcmToken -> topic 교체
@@ -77,7 +78,7 @@ public class FcmTokenBusiness {
         }
 
         // oldToken 조회
-        var oldTokenOptional = fcmTokenService.getFcmToken(oldToken);
+        var oldTokenOptional = fcmTokenSeconService.getFcmToken(oldToken);
         if (oldTokenOptional.isEmpty()) {
             // oldToken 이 없는 경우 newToken 저장
             return this.saveFcmToken(new FcmTokenRequest(newToken, fcmTokenUpdateRequest.getDeviceType()));
@@ -86,18 +87,24 @@ public class FcmTokenBusiness {
         var oldFcmTokenDocument = oldTokenOptional.get();
 
         // newToken 존재 확인
-        var newTokenDocumentOptional = fcmTokenService.getFcmToken(newToken);
+        var newTokenDocumentOptional = fcmTokenSeconService.getFcmToken(newToken);
 
         // newToken 이 존재하지 않으면 저장할 새 Document 생성
-        FcmTokenDocument newFcmTokenDocument = newTokenDocumentOptional.orElseGet(() ->
-            fcmTokenConverter.toDocument(new FcmTokenRequest(newToken, fcmTokenUpdateRequest.getDeviceType()))
+        FcmTokenSeconDocument newFcmTokenDocument = newTokenDocumentOptional.orElseGet(() ->
+            FcmTokenSeconDocument.builder()
+                .fcmToken(newToken)
+                .createdAt(LocalDateTime.now())
+                .deviceType(fcmTokenUpdateRequest.getDeviceType() == null ? DeviceType.AOS : fcmTokenUpdateRequest.getDeviceType())
+                .subscribedNoticeTopics(Arrays.stream(NoticeMapper.values()).map(Enum::toString).collect(
+                    Collectors.toSet()))
+                .build()
         );
 
         // oldToken 의 토픽 및 상태값 복사
-        newFcmTokenDocument.copyTopicsAndStatusFrom(oldFcmTokenDocument, fcmTokenUpdateRequest.getDeviceType());
+        newFcmTokenDocument.setSubscribedNoticeTopics(oldFcmTokenDocument.getSubscribedNoticeTopics());
 
-        fcmTokenService.saveFcmToken(newFcmTokenDocument);
-        fcmTokenService.deleteBy(oldToken);
+        fcmTokenSeconService.saveFcmToken(newFcmTokenDocument);
+        fcmTokenSeconService.delete(oldToken);
         return true;
     }
 

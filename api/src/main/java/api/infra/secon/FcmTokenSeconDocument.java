@@ -1,6 +1,5 @@
 package api.infra.secon;
 
-
 import global.utils.DeviceType;
 import java.util.HashSet;
 import java.util.Set;

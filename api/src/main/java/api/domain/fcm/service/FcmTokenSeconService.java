@@ -21,4 +21,9 @@ public class FcmTokenSeconService {
         return savedFcmToken.getFcmToken() != null;
     }
 
+    public boolean delete(String fcmToken) {
+        fcmTokenMongoSeconRepository.deleteById(fcmToken);
+        return true;
+    }
+
 }
