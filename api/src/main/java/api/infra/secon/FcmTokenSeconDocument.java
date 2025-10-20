@@ -1,6 +1,7 @@
 package api.infra.secon;
 
 import global.utils.DeviceType;
+import global.utils.NoticeMapper;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Builder;
@@ -17,7 +18,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @SuperBuilder
 @NoArgsConstructor
 public class FcmTokenSeconDocument extends MongoBaseDocument {
-
 
     @Id
     private String fcmToken;
@@ -36,5 +36,16 @@ public class FcmTokenSeconDocument extends MongoBaseDocument {
 
     @Builder.Default
     private DeviceType deviceType = DeviceType.AOS;
+
+
+    public void updateNoticeTopicSubscription(NoticeMapper noticeName, boolean subscribe) {
+        String topic = noticeName.toString();
+
+        if (subscribe) {
+            this.subscribedNoticeTopics.add(topic);
+        } else {
+            this.subscribedNoticeTopics.remove(topic);
+        }
+    }
 
 }
