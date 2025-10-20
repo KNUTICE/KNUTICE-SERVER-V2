@@ -13,7 +13,7 @@ import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "api.infra.secondary", mongoTemplateRef = "secondaryMongoTemplate")
+@EnableMongoRepositories(basePackages = "api.infra.secon", mongoTemplateRef = "secondaryMongoTemplate")
 public class SecondaryMongoConfig {
 
     @Bean(name = "secondaryMongoProperties")
