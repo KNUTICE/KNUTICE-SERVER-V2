@@ -5,10 +5,18 @@ spring:
   application:
     name: knutice-api
 
+  # Mongo 자동구성 비활성화
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+
   data:
     mongodb:
-      uri: ${MONGO_URI}
-      database: ${MONGO_DATABASE}
+      primary:
+        uri: ${MONGO_PRIMARY_URI}
+        database: ${MONGO_DATABASE}
+      secondary:
+        uri: ${MONGO_SECONDARY_URI}
+        database: ${MONGO_DATABASE}
 
 jwt:
   secret:

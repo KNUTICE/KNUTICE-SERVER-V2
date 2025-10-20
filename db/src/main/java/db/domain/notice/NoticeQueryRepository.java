@@ -21,7 +21,7 @@ import static db.domain.notice.QNoticeDocument.*;
 @Repository
 public class NoticeQueryRepository extends QuerydslRepositorySupport {
 
-    public NoticeQueryRepository(@Qualifier("mongoTemplate") MongoOperations operations) {
+    public NoticeQueryRepository(@Qualifier("primaryMongoTemplate") MongoOperations operations) {
         super(operations);
     }
 
