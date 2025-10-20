@@ -104,7 +104,7 @@ public class FcmTokenBusiness {
         newFcmTokenDocument.setSubscribedNoticeTopics(oldFcmTokenDocument.getSubscribedNoticeTopics());
 
         fcmTokenSeconService.saveFcmToken(newFcmTokenDocument);
-        fcmTokenSeconService.delete(oldToken);
+        fcmTokenSeconService.deleteBy(oldToken);
         return true;
     }
 

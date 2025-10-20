@@ -2,6 +2,7 @@ package api.domain.report.business;
 
 import api.common.error.FcmTokenErrorCode;
 import api.common.exception.fcm.FcmTokenNotFoundException;
+import api.domain.fcm.service.FcmTokenSeconService;
 import api.domain.report.controller.model.ReportDetailResponse;
 import api.domain.report.controller.model.ReportSimpleResponse;
 import api.domain.fcm.service.FcmTokenService;
@@ -20,14 +21,14 @@ public class ReportBusiness {
 
     private final ReportService reportService;
     private final FcmTokenService fcmTokenService;
+    private final FcmTokenSeconService fcmTokenSeconService;
     private final SlackService slackService;
 
     private final ReportConverter reportConverter;
 
+    // 토큰 조회만 SecondaryDB 에서 조회, Report 저장은 PrimaryDB
     public Boolean submitReport(ReportRequest reportRequest) {
-
-        boolean existsFcmToken = fcmTokenService.existsBy(reportRequest.getFcmToken());
-
+        boolean existsFcmToken = fcmTokenSeconService.existsBy(reportRequest.getFcmToken());
         if (!existsFcmToken) {
             throw new FcmTokenNotFoundException(FcmTokenErrorCode.TOKEN_NOT_FOUND);
         }
