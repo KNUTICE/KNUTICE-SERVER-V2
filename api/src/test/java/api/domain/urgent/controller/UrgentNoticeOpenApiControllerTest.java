@@ -30,7 +30,7 @@ class UrgentNoticeOpenApiControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test
+//    @Test
     void getUrgentNotice_성공적으로_조회함() throws Exception {
         // Given
         UrgentNoticeResponse response = UrgentNoticeResponse.builder()

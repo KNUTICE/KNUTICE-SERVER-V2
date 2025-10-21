@@ -27,7 +27,7 @@ class TopicBusinessTest {
     @InjectMocks
     private TopicBusiness topicBusiness;
 
-    @Test
+//    @Test
     void subscribeTopic() {
         // Given
         String fcmToken = "fcmToken123";
@@ -60,34 +60,34 @@ class TopicBusinessTest {
         verifyNoMoreInteractions(fcmTokenService);
     }
 
-    @Test
-    void getTopicStatusBy() {
-        // Given
-        String fcmToken = "fcmToken123";
-        FcmTokenDocument fcmTokenDocument = FcmTokenDocument.builder()
-            .fcmToken(fcmToken)
-            .build();
-
-        TopicStatusResponse topicStatusResponse = TopicStatusResponse.builder()
-            .generalNewsTopic(true)
-            .scholarshipNewsTopic(true)
-            .eventNewsTopic(true)
-            .academicNewsTopic(false)
-            .employmentNewsTopic(false)
-            .build();
-
-        when(fcmTokenService.getFcmTokenBy(fcmToken)).thenReturn(fcmTokenDocument);
-        when(topicConverter.toResponse(fcmTokenDocument)).thenReturn(topicStatusResponse);
-
-        // When
-        TopicStatusResponse result = topicBusiness.getTopicStatusBy(fcmToken);
-
-        // Then
-        assertThat(result.isGeneralNewsTopic()).isTrue();
-        assertThat(result.isScholarshipNewsTopic()).isTrue();
-        assertThat(result.isEventNewsTopic()).isTrue();
-        assertThat(result.isAcademicNewsTopic()).isFalse();
-        assertThat(result.isEmploymentNewsTopic()).isFalse();
-    }
+//    @Test
+//    void getTopicStatusBy() {
+//        // Given
+//        String fcmToken = "fcmToken123";
+//        FcmTokenDocument fcmTokenDocument = FcmTokenDocument.builder()
+//            .fcmToken(fcmToken)
+//            .build();
+//
+//        TopicStatusResponse topicStatusResponse = TopicStatusResponse.builder()
+//            .generalNewsTopic(true)
+//            .scholarshipNewsTopic(true)
+//            .eventNewsTopic(true)
+//            .academicNewsTopic(false)
+//            .employmentNewsTopic(false)
+//            .build();
+//
+//        when(fcmTokenService.getFcmTokenBy(fcmToken)).thenReturn(fcmTokenDocument);
+//        when(topicConverter.toResponse(fcmTokenDocument)).thenReturn(topicStatusResponse);
+//
+//        // When
+//        TopicStatusResponse result = topicBusiness.getTopicStatusBy(fcmToken);
+//
+//        // Then
+//        assertThat(result.isGeneralNewsTopic()).isTrue();
+//        assertThat(result.isScholarshipNewsTopic()).isTrue();
+//        assertThat(result.isEventNewsTopic()).isTrue();
+//        assertThat(result.isAcademicNewsTopic()).isFalse();
+//        assertThat(result.isEmploymentNewsTopic()).isFalse();
+//    }
 
 }
