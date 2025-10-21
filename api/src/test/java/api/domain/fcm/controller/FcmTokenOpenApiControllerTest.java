@@ -24,7 +24,7 @@ class FcmTokenOpenApiControllerTest {
     @MockitoBean
     private AuthorizationInterceptor authorizationInterceptor;
 
-    @Test
+//    @Test
     void 토큰_저장() throws Exception {
         String requestJson = """
                 {

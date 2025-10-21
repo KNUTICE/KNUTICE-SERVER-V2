@@ -4,12 +4,18 @@ import api.domain.fcm.controller.model.FcmTokenInfo;
 import api.domain.fcm.controller.model.FcmTokenRequest;
 import api.domain.fcm.controller.model.FcmTokenUpdateRequest;
 import api.domain.fcm.converter.FcmTokenConverter;
+import api.domain.fcm.service.FcmTokenSeconService;
 import api.domain.fcm.service.FcmTokenService;
+import api.infra.secon.FcmTokenSeconDocument;
 import db.domain.token.fcm.FcmTokenDocument;
 import global.annotation.Business;
+import global.utils.DeviceType;
+import global.utils.NoticeMapper;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,34 +26,34 @@ import org.springframework.transaction.annotation.Transactional;
 public class FcmTokenBusiness {
 
     private final FcmTokenService fcmTokenService;
+    private final FcmTokenSeconService fcmTokenSeconService;
 
     private final FcmTokenConverter fcmTokenConverter;
 
+    // SecondaryDB 연결
     public Boolean saveFcmToken(FcmTokenRequest fcmTokenRequest) {
+        Optional<FcmTokenSeconDocument> fcmTokenSeconDocument = fcmTokenSeconService.getFcmToken(fcmTokenRequest.getFcmToken());
 
-        Optional<FcmTokenDocument> fcmTokenDocument = fcmTokenService.getFcmToken(
-            fcmTokenRequest.getFcmToken());
-
-        /**
-         * 기존 토큰이 존재한다면 RegisteredAt, failed_token 변경 후 토큰 저장
-         * 기존 토큰이 존재하지 않다면 새 토큰 저장함
-         */
-        if (fcmTokenDocument.isPresent()) {
-            FcmTokenDocument existsFcmTokenDocument = fcmTokenDocument.get();
-            existsFcmTokenDocument.setRegisteredAt(LocalDateTime.now());
-            existsFcmTokenDocument.setFailedCount(0);
-            existsFcmTokenDocument.setDeviceType(
-                fcmTokenRequest.getDeviceType() != null
-                    ? fcmTokenRequest.getDeviceType()
-                    : existsFcmTokenDocument.getDeviceType()
-            );
-            return fcmTokenService.saveFcmToken(existsFcmTokenDocument);
-        } else { // @Builder.Default 를 지정했기 때문에, set() 할 필요 없음
-            FcmTokenDocument newFcmTokenDocument = fcmTokenConverter.toDocument(fcmTokenRequest);
-            return fcmTokenService.saveFcmToken(newFcmTokenDocument);
+        if (fcmTokenSeconDocument.isPresent()) {
+            FcmTokenSeconDocument fcmTokenSeconDocumentExists = fcmTokenSeconDocument.get();
+            fcmTokenSeconDocumentExists.setIsActive(true);
+            // deviceType 이 null 인 경우 AOS
+            fcmTokenSeconDocumentExists.setDeviceType(fcmTokenRequest.getDeviceType() == null ? DeviceType.AOS : fcmTokenRequest.getDeviceType());
+            return fcmTokenSeconService.saveFcmToken(fcmTokenSeconDocumentExists);
+            // 저장
+        } else {
+            FcmTokenSeconDocument newFcmTokenSeconDocument = FcmTokenSeconDocument.builder()
+                .fcmToken(fcmTokenRequest.getFcmToken())
+                .createdAt(LocalDateTime.now())
+                .deviceType(fcmTokenRequest.getDeviceType() == null ? DeviceType.AOS : fcmTokenRequest.getDeviceType())
+                .subscribedNoticeTopics(Arrays.stream(NoticeMapper.values()).map(Enum::toString).collect(
+                    Collectors.toSet()))
+                .build();
+            return fcmTokenSeconService.saveFcmToken(newFcmTokenSeconDocument);
         }
     }
 
+    // SecondaryDB 연결
     /**
      * oldFcmToken == newFcmToken -> return
      * oldFcmToken != newFcmToken -> topic 교체
@@ -72,7 +78,7 @@ public class FcmTokenBusiness {
         }
 
         // oldToken 조회
-        var oldTokenOptional = fcmTokenService.getFcmToken(oldToken);
+        var oldTokenOptional = fcmTokenSeconService.getFcmToken(oldToken);
         if (oldTokenOptional.isEmpty()) {
             // oldToken 이 없는 경우 newToken 저장
             return this.saveFcmToken(new FcmTokenRequest(newToken, fcmTokenUpdateRequest.getDeviceType()));
@@ -81,18 +87,24 @@ public class FcmTokenBusiness {
         var oldFcmTokenDocument = oldTokenOptional.get();
 
         // newToken 존재 확인
-        var newTokenDocumentOptional = fcmTokenService.getFcmToken(newToken);
+        var newTokenDocumentOptional = fcmTokenSeconService.getFcmToken(newToken);
 
         // newToken 이 존재하지 않으면 저장할 새 Document 생성
-        FcmTokenDocument newFcmTokenDocument = newTokenDocumentOptional.orElseGet(() ->
-            fcmTokenConverter.toDocument(new FcmTokenRequest(newToken, fcmTokenUpdateRequest.getDeviceType()))
+        FcmTokenSeconDocument newFcmTokenDocument = newTokenDocumentOptional.orElseGet(() ->
+            FcmTokenSeconDocument.builder()
+                .fcmToken(newToken)
+                .createdAt(LocalDateTime.now())
+                .deviceType(fcmTokenUpdateRequest.getDeviceType() == null ? DeviceType.AOS : fcmTokenUpdateRequest.getDeviceType())
+                .subscribedNoticeTopics(Arrays.stream(NoticeMapper.values()).map(Enum::toString).collect(
+                    Collectors.toSet()))
+                .build()
         );
 
         // oldToken 의 토픽 및 상태값 복사
-        newFcmTokenDocument.copyTopicsAndStatusFrom(oldFcmTokenDocument, fcmTokenUpdateRequest.getDeviceType());
+        newFcmTokenDocument.setSubscribedNoticeTopics(oldFcmTokenDocument.getSubscribedNoticeTopics());
 
-        fcmTokenService.saveFcmToken(newFcmTokenDocument);
-        fcmTokenService.deleteBy(oldToken);
+        fcmTokenSeconService.saveFcmToken(newFcmTokenDocument);
+        fcmTokenSeconService.deleteBy(oldToken);
         return true;
     }
 
