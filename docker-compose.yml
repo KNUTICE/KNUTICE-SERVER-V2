@@ -13,6 +13,8 @@ services:
       - API_PORT
       - MONGO_URI
       - MONGO_DATABASE
+      - MONGO_PRIMARY_URI
+      - MONGO_SECONDARY_URI
       - JWT_SECRET_KEY
       - JWT_ACCESS_PLUS_HOUR
       - JWT_REFRESH_PLUS_HOUR
